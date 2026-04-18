@@ -1,3 +1,22 @@
+> ## ⚠ This Repository Is a TimberClaw Fork
+>
+> This repo is a **fork of OpenHands**, but the active project is **TimberClaw-code** — a Builder for generating
+> lightweight MES/BI systems for discrete-manufacturing factories. **Before doing anything, read these first:**
+>
+> 1. [`TIMBERCLAW.md`](TIMBERCLAW.md) — what this project is
+> 2. [`timberclaw/AGENTS.md`](timberclaw/AGENTS.md) — your (Coding Agent) hard constraints for TimberClaw work
+> 3. [`timberclaw/docs/PRD.md`](timberclaw/docs/PRD.md) — single source of truth for product requirements
+> 4. [`timberclaw/docs/CONVENTIONS.md`](timberclaw/docs/CONVENTIONS.md) — monorepo layout & upstream-sync rules
+> 5. [`timberclaw/docs/BACKLOG.md`](timberclaw/docs/BACKLOG.md) — concrete tickets with acceptance criteria
+>
+> **Precedence when rules conflict**: TimberClaw PRD → `timberclaw/AGENTS.md` → `timberclaw/docs/CONVENTIONS.md`
+> → this file (upstream OpenHands guidance, still valid for work outside `timberclaw/` and `frontend/src/timberclaw/`).
+>
+> The rest of this file is the **original upstream OpenHands guidance**. It still applies when you are modifying
+> files outside the TimberClaw directories, but it does **not** override TimberClaw's hard constraints above.
+
+---
+
 This repository contains the code for OpenHands, an automated AI software engineer. It has a Python backend
 (in the `openhands` directory) and React frontend (in the `frontend` directory).
 
