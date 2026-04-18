@@ -26,6 +26,8 @@ share/python-wheels/
 *.egg
 MANIFEST
 requirements.txt
+# TimberClaw Builder Django service pins its own dependencies (M0-01+).
+!timberclaw/backend/requirements.txt
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
