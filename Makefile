@@ -13,6 +13,11 @@ CONFIG_FILE = config.toml
 PRE_COMMIT_CONFIG_PATH = "./dev_config/python/.pre-commit-config.yaml"
 PYTHON_VERSION = 3.12
 KIND_CLUSTER_NAME = "local-hands"
+PYPI_MIRROR_URL ?= https://pypi.tuna.tsinghua.edu.cn/simple
+PYPI_FALLBACK_MIRROR_URL ?= https://mirrors.aliyun.com/pypi/simple
+PYPI_FINAL_FALLBACK_URL ?= https://pypi.org/simple
+PYPI_MIRROR_CACHE_FILE ?= cache/selected_pypi_mirror.txt
+SKIP_PYPI_CONNECTIVITY_CHECK ?= 0
 
 # ANSI color codes
 GREEN=$(shell tput -Txterm setaf 2)
@@ -136,23 +141,62 @@ check-poetry:
 		exit 1; \
 	fi
 
-install-python-dependencies:
+prepare-poetry-cache:
+	@mkdir -p "$${HOME}/.cache/pypoetry/virtualenvs"
+	@[ -f "$${HOME}/.cache/pypoetry/virtualenvs/envs.toml" ] || touch "$${HOME}/.cache/pypoetry/virtualenvs/envs.toml"
+
+resolve-pypi-mirror:
+	@echo "$(YELLOW)Resolving available PyPI mirror...$(RESET)"
+	@mkdir -p cache
+	@if [ "$(SKIP_PYPI_CONNECTIVITY_CHECK)" = "1" ]; then \
+		echo "$(YELLOW)Skipping mirror connectivity check (SKIP_PYPI_CONNECTIVITY_CHECK=1).$(RESET)"; \
+		echo "$(PYPI_MIRROR_URL)" > $(PYPI_MIRROR_CACHE_FILE); \
+		echo "$(BLUE)Using configured primary mirror: $(PYPI_MIRROR_URL)$(RESET)"; \
+	elif ! command -v curl > /dev/null; then \
+		echo "$(YELLOW)curl not found; fallback to primary mirror $(PYPI_MIRROR_URL).$(RESET)"; \
+		echo "$(PYPI_MIRROR_URL)" > $(PYPI_MIRROR_CACHE_FILE); \
+	else \
+		SELECTED=""; \
+		for URL in $(PYPI_MIRROR_URL) $(PYPI_FALLBACK_MIRROR_URL) $(PYPI_FINAL_FALLBACK_URL); do \
+			if curl -I -L --max-time 8 "$$URL" > /dev/null 2>&1; then \
+				SELECTED="$$URL"; \
+				break; \
+			fi; \
+		done; \
+		if [ -z "$$SELECTED" ]; then \
+			echo "$(RED)No reachable PyPI mirror found.$(RESET)"; \
+			echo "$(YELLOW)Tried: $(PYPI_MIRROR_URL), $(PYPI_FALLBACK_MIRROR_URL), $(PYPI_FINAL_FALLBACK_URL).$(RESET)"; \
+			echo "$(YELLOW)Please allowlist one of these domains or override mirror variables before retrying.$(RESET)"; \
+			exit 1; \
+		fi; \
+		echo "$$SELECTED" > $(PYPI_MIRROR_CACHE_FILE); \
+		echo "$(BLUE)Using PyPI mirror: $$SELECTED$(RESET)"; \
+	fi
+
+check-pypi-mirror-connectivity: resolve-pypi-mirror
+
+install-python-dependencies: prepare-poetry-cache resolve-pypi-mirror
 	@echo "$(GREEN)Installing Python dependencies...$(RESET)"
+	@ACTIVE_PYPI_MIRROR=$$(cat $(PYPI_MIRROR_CACHE_FILE)); \
+	echo "$(BLUE)Resolved mirror for install: $$ACTIVE_PYPI_MIRROR$(RESET)"
 	@if [ -z "${TZ}" ]; then \
 		echo "Defaulting TZ (timezone) to UTC"; \
 		export TZ="UTC"; \
 	fi
 	poetry env use python$(PYTHON_VERSION)
 	@if [ "$(shell uname)" = "Darwin" ]; then \
+		ACTIVE_PYPI_MIRROR=$$(cat $(PYPI_MIRROR_CACHE_FILE)); \
 		echo "$(BLUE)Installing chroma-hnswlib...$(RESET)"; \
 		export HNSWLIB_NO_NATIVE=1; \
-		poetry run pip install chroma-hnswlib; \
+		poetry run pip install -i $$ACTIVE_PYPI_MIRROR chroma-hnswlib; \
 	fi
 	@if [ -n "${POETRY_GROUP}" ]; then \
+		ACTIVE_PYPI_MIRROR=$$(cat $(PYPI_MIRROR_CACHE_FILE)); \
 		echo "Installing only POETRY_GROUP=${POETRY_GROUP}"; \
-		poetry install --only $${POETRY_GROUP}; \
+		PIP_INDEX_URL=$$ACTIVE_PYPI_MIRROR poetry install --only $${POETRY_GROUP}; \
 	else \
-		poetry install --with dev,test,runtime; \
+		ACTIVE_PYPI_MIRROR=$$(cat $(PYPI_MIRROR_CACHE_FILE)); \
+		PIP_INDEX_URL=$$ACTIVE_PYPI_MIRROR poetry install --with dev,test,runtime; \
 	fi
 	@if [ "${INSTALL_PLAYWRIGHT}" != "false" ] && [ "${INSTALL_PLAYWRIGHT}" != "0" ]; then \
 		if [ -f "/etc/manjaro-release" ]; then \
@@ -182,7 +226,7 @@ install-frontend-dependencies: check-npm check-nodejs
 	@cd frontend && npm install
 	@echo "$(GREEN)Frontend dependencies installed successfully.$(RESET)"
 
-install-pre-commit-hooks: check-python check-poetry install-python-dependencies
+install-pre-commit-hooks: check-python check-poetry prepare-poetry-cache
 	@echo "$(YELLOW)Installing pre-commit hooks...$(RESET)"
 	@git config --unset-all core.hooksPath || true
 	@poetry run pre-commit install --config $(PRE_COMMIT_CONFIG_PATH)

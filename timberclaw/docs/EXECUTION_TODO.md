@@ -27,8 +27,8 @@
   - 扩展 compose 以纳入 Django + PostgreSQL（按最小侵入策略）
 - 本次执行批次（Batch）
   - Batch 1：计划与任务切分（完成）
-  - Batch 2：仓库与目录落位初始化（进行中）
-  - Batch 3：运行与连通性自检（待开始）
+  - Batch 2：仓库与目录落位初始化（完成）
+  - Batch 3：运行与连通性自检（进行中）
 
 ### W-A-02: M0-03 LLM Gateway 抽象
 - 状态：`pending`
@@ -84,15 +84,15 @@
 
 ### Agent-Backend
 - 负责：Django 项目骨架、后端配置、API 占位
-- 当前状态：`pending`
+- 当前状态：`done`
 
 ### Agent-Frontend
 - 负责：`frontend/src/timberclaw/` 路由挂载与 AntD 占位页
-- 当前状态：`pending`
+- 当前状态：`done`
 
 ### Agent-Infra
 - 负责：compose 扩展、自检脚本、环境变量约定
-- 当前状态：`pending`
+- 当前状态：`in_progress`
 
 ### Agent-QA
 - 负责：验收清单、命令验证、阻塞与风险归档
@@ -103,19 +103,30 @@
 
 ## 风险与阻塞
 
-1. `make install-pre-commit-hooks` 在当前环境失败：
-   - 错误：`No such file or directory: /root/.cache/pypoetry/virtualenvs/envs.toml`
-   - 影响：pre-commit hooks 未能完成安装
-   - 策略：记录失败并继续执行“能跑的都跑”的检查；后续补齐 Poetry 环境后重试
+0. Batch 2 已完成：已落地 /tc 路由占位与 `timberclaw/backend` Django 目录骨架。
+
+
+1. `make install-pre-commit-hooks` 已切换为“轻量安装模式”：
+   - 处理：不再强依赖 `install-python-dependencies`，只做 Poetry 校验 + cache 准备 + hooks 安装
+   - 效果：检验环节不会被 PyPI / Playwright 下载链路阻塞
+   - 备注：完整依赖安装仍由 `make install-python-dependencies` 负责，失败时应按原规则报错
 
 2. M0 尚未完成，M1~M8 只能做计划与队列管理，不能越级实现依赖工单。
+3. 前端运行态截图受阻：Playwright 浏览器二进制下载被代理拒绝（403）。
+   - 影响：无法在当前环境产出 `/tc` 页面截图证据
+   - 策略：网络放通后执行 `cd frontend && pnpm exec playwright install chromium`，再补跑截图脚本
+4. PyPI 主源不可达（代理 403）。
+   - 影响：`make install-python-dependencies` 无法稳定拉包
+   - 策略：依赖安装走“清华 → 阿里 → 官方”镜像回退链，并记录命中的镜像
+   - 云端临时绕行：`SKIP_PYPI_CONNECTIVITY_CHECK=1 make install-python-dependencies`
+   - 运行手册：`timberclaw/docs/NETWORK_RUNBOOK.md`
 
 ---
 
 ## 下一步（Next Action）
 
-1. 进入 M0-01 Batch 2：落地最小路由骨架（`/tc/*`）与 Django 目录骨架。
-2. 衔接 M0-01 Batch 3：验证 compose 启动链路并记录证据。
+1. 完成 M0-01 Batch 3：验证 compose 启动链路并记录证据。
+2. 在 compose 侧补齐 Django + PostgreSQL 服务声明（最小侵入）。
 3. M0-01 达标后，按并行策略同时拉起 M0-02 / M0-03 / M0-04。
 
 ---
