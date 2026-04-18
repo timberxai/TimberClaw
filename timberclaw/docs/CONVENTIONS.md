@@ -1,8 +1,9 @@
 # TimberClaw-code 仓库约定（Monorepo Conventions）
 
-**版本**：V1.1
+**版本**：V1.2
 **用途**：本文件定义 TimberClaw-code（OpenHands fork）作为 monorepo 的结构纪律、代码落位、上游同步、分支与提交规范。**所有 Coding Agent 与 Human Developer 必须遵守。**
 
+**V1.2 更新**（对齐 PRD V1.6）：明确 **`EXECUTION_TODO.md` 是 Coding Agent 唯一调度面**（PRD §15.1）；**单 PR 单工单**、PR base 必须为 `cursor`（PRD §15.2）；工单状态机与 Pickup 协议见 PRD §15.3，强制字段见 §15.4，停止条件见 §15.6。
 **V1.1 更新**：引入 **`cursor`** 作为 TimberClaw 日常开发与 PR 合并的默认集成分支；`main` 保留用于上游对齐 / 对外发布节奏，功能开发不直推 `main`。
 
 本文件的优先级：PRD > AGENTS.md > CONVENTIONS.md（本文件）> 仓库各子目录的 README。
