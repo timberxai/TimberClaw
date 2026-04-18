@@ -10,6 +10,7 @@
 ## 当前总览
 - 当前波次：**Wave A（M0 基础设施）**；Wave B–G（M1–M8）仍见本文件后续章节与 `ROADMAP_EXECUTION_PLAN.md`，**未在单分支内「一次做完」**。
 - 当前 Sprint：**Sprint-0（Wave A：M0-01~M0-04 推进中；合并目标分支 `cursor`）**
+- **执行边界**：本看板列出 Wave A–G 全路线图；**不可能在单次迭代内全部实现**。交付按 Wave 顺序推进；`.github/workflows/timberclaw-builder.yml` 提供 TimberClaw 相关改动的 **可重复 CI 验收**（不等价于「所有工单已完成」）。
 - 总计划：见 `timberclaw/docs/ROADMAP_EXECUTION_PLAN.md`
 - 基线 PRD：V1.5；基线 BACKLOG：V1.2
 - 下一里程碑出口：`docker compose up` 可拉起 Builder 基础能力（含 OpenHands 原屏 + `/tc/*` 占位 + PG）
@@ -37,7 +38,7 @@
 - **pre-commit hooks 链路本地可用**（W-A-00 解锁）
 
 ### W-A-00: 修复 Poetry / pre-commit 环境（阻塞修复）
-- 状态：`pending`（Makefile 已增加 `ensure-poetry-virtualenvs-path`；待 Batch 3 在干净环境复验）
+- 状态：`pending`（Makefile 已增加 `ensure-poetry-virtualenvs-path`；**本机** `make install-pre-commit-hooks` 仍待 Python 3.12 + Poetry 环境复验；仓库级 **pre-commit** 已由 `.github/workflows/lint.yml` 的 `lint-python` 以 pip 安装方式覆盖，与 Poetry 虚拟环境解耦）
 - 依赖：无
 - 关联 BACKLOG：M0-01 前置
 - 范围：
@@ -77,7 +78,7 @@
 - 范围：Project Access Token 配置；连通性自检；机器账号身份分支 / commit / MR
 
 ### W-A-04: M0-05 Builder 部署与自检
-- 状态：`in_progress`（`tc_wave_a_check.sh`：PG 宿主机 TCP + `tc_compose_health.sh`（`/api/health/` 含 **DB**）+ LLM/GitLab；**可选** `TC_WAVE_A_RUN_PYTEST` / `TC_WAVE_A_RUN_PRE_COMMIT`；待 W-A-00 后把 pre-commit 纳入默认 CI/文档「必跑」）
+- 状态：`in_progress`（`tc_wave_a_check.sh`：PG 宿主机 TCP + `tc_compose_health.sh`（`/api/health/` 含 **DB**）+ LLM/GitLab；**可选** `TC_WAVE_A_RUN_PYTEST` / `TC_WAVE_A_RUN_PRE_COMMIT`；**CI**：`.github/workflows/timberclaw-builder.yml`（`main`/`cursor` + paths 过滤）跑 Docker **pytest**、compose 上 **tc_wave_a_check**、`frontend` 下 **`src/timberclaw` ESLint**；README「30 min deploy」叙事与是否默认跑 `TC_WAVE_A_RUN_PRE_COMMIT` 仍待 W-A-00 后收口）
 - 依赖：W-A-00、W-A-01、W-A-02、W-A-03（均已满足；W-A-00 仍影响 pre-commit 是否默认可跑）
 - 并行策略：Wave A 收口工单
 - 范围：`docker-compose.yml` + README；启动自检脚本（PG 可达、GitLab 连通、LLM 连通）
