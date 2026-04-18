@@ -18,6 +18,8 @@ COPY pytest.ini .
 COPY manage.py .
 COPY tc_project ./tc_project
 COPY accounts ./accounts
+COPY llm ./llm
+COPY gitlab_integration ./gitlab_integration
 COPY tests ./tests
 
 EXPOSE 8000

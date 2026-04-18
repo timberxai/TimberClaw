@@ -1,19 +1,20 @@
 """Django settings for TimberClaw Builder API (M0-01 minimal scaffold)."""
 
+import os
 from pathlib import Path
 
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = __import__("os").environ.get(
+SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
     "django-insecure-timberclaw-dev-only-change-in-prod",
 )
 
-DEBUG = __import__("os").environ.get("DJANGO_DEBUG", "1") == "1"
+DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
-ALLOWED_HOSTS = __import__("os").environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -24,6 +25,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "accounts.apps.AccountsConfig",
+    "llm.apps.LlmConfig",
+    "gitlab_integration.apps.GitlabIntegrationConfig",
 ]
 
 MIDDLEWARE = [
@@ -86,3 +89,23 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
 }
+
+# --- LLM Gateway (M0-03 / PRD §8.5) ---
+TC_LLM_PROVIDER = os.environ.get("TC_LLM_PROVIDER", "mock")
+TC_OPENAI_API_KEY = os.environ.get("TC_OPENAI_API_KEY", "")
+TC_OPENAI_BASE_URL = os.environ.get("TC_OPENAI_BASE_URL", "https://api.openai.com/v1")
+TC_DASHSCOPE_API_KEY = os.environ.get("TC_DASHSCOPE_API_KEY", "")
+TC_DASHSCOPE_BASE_URL = os.environ.get(
+    "TC_DASHSCOPE_BASE_URL",
+    "https://dashscope.aliyuncs.com/compatible-mode/v1",
+)
+TC_LLM_MODEL_OPENAI = os.environ.get("TC_LLM_MODEL_OPENAI", "gpt-4o-mini")
+TC_LLM_MODEL_DASHSCOPE = os.environ.get("TC_LLM_MODEL_DASHSCOPE", "qwen-turbo")
+TC_LLM_MAX_OUTPUT_TOKENS = int(os.environ.get("TC_LLM_MAX_OUTPUT_TOKENS", "512"))
+TC_LLM_TIMEOUT_SECONDS = float(os.environ.get("TC_LLM_TIMEOUT_SECONDS", "30"))
+
+# --- GitLab (M0-04 / PRD §8.7) ---
+TC_GITLAB_URL = os.environ.get("TC_GITLAB_URL", "").rstrip("/")
+TC_GITLAB_TOKEN = os.environ.get("TC_GITLAB_TOKEN", "")
+TC_GITLAB_PROJECT_ID = os.environ.get("TC_GITLAB_PROJECT_ID", "").strip()
+TC_GITLAB_SSL_VERIFY = os.environ.get("TC_GITLAB_SSL_VERIFY", "1") == "1"

@@ -40,7 +40,7 @@
 |----|------|
 | PRD | **V1.5**（对齐离散制造真实场景 + 概念隔离 + 仪表盘一等公民 + CSV 主数据 + 双视图） |
 | BACKLOG | **V1.2**（对齐 PRD V1.5，新增 5 张核心工单） |
-| 代码实现 | **M0-01 已收口**；**M0-02（认证）MVP 已落地**：`accounts`（五角色 `UserProfile`、Session 登录 API、`seed_builder_demo_users`、`docker compose run tc-backend python -m pytest`）；下一步 **W-A-02 / W-A-03**（LLM / GitLab 占位）→ **W-A-04**（M0-05 统一自检） |
+| 代码实现 | **M0-01~M0-03 + M0-04（读）已落地**：`accounts` + `llm`（Gateway / `/api/health/llm` / `/api/llm/invoke`）+ `gitlab_integration`（`/api/health/gitlab`）；**W-A-03 写路径**与 **W-A-04 全量自检**进行中 |
 | Fork 起始 tag | 待 Platform Engineer 在 M0-01 启动时锁定并回写 PRD §2 |
 
 ---
@@ -80,7 +80,13 @@ docker compose exec tc-backend python manage.py seed_builder_demo_users
 docker compose run --rm tc-backend python -m pytest
 ```
 
-冒烟脚本（需 `tc-backend` 已启动）：
+Wave A 健康三件套（需 `tc-backend` 已启动）：
+
+```bash
+bash scripts/tc_wave_a_check.sh
+```
+
+Django 根健康（仅 API）：
 
 ```bash
 bash scripts/tc_compose_health.sh

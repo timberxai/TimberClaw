@@ -5,11 +5,11 @@
 > 状态定义：`pending`（未开始）/ `in_progress`（进行中）/ `blocked`（阻塞）/ `done`（完成）
 
 ## 更新时间
-- 2026-04-19 (UTC)
+- 2026-04-20 (UTC)
 
 ## 当前总览
 - 当前波次：**Wave A（M0 基础设施）**
-- 当前 Sprint：**Sprint-0（M0-01 已收口 + M0-02 认证落地中）**
+- 当前 Sprint：**Sprint-0（Wave A：M0-01~M0-04 推进中；合并目标分支 `cursor`）**
 - 总计划：见 `timberclaw/docs/ROADMAP_EXECUTION_PLAN.md`
 - 基线 PRD：V1.5；基线 BACKLOG：V1.2
 - 下一里程碑出口：`docker compose up` 可拉起 Builder 基础能力（含 OpenHands 原屏 + `/tc/*` 占位 + PG）
@@ -64,22 +64,23 @@
   - Batch 3：运行与连通性自检（done）
 
 ### W-A-02: M0-03 LLM Gateway 抽象
-- 状态：`pending`
-- 依赖：W-A-01 完整完成（不只是 Batch 2）
-- 并行策略：M0-01 done 后与 W-A-03、W-A-05 三路并行
+- 状态：`done`（MVP：`mock` / `openai` / `dashscope` 三出口；`/api/health/llm/`；`/api/llm/invoke/` + `LLMCallLog` + 出站脱敏工具 + Token 上限）
+- 依赖：W-A-01
+- 并行策略：与 W-A-03、W-A-05 并行
 - 范围：抽象统一 LLM 出口；至少支持 OpenAI + 一家国内厂商；Token / 成功率 / 失败原因监控；单任务上限；出站脱敏
+- 备注：调用统计当前以 **Django Admin → LLM 调用记录** 查看；后续可接 Wave G 指标看板
 
 ### W-A-03: M0-04 GitLab 接入
-- 状态：`pending`
+- 状态：`in_progress`（**阶段 A done**：`/api/health/gitlab/` + `TC_GITLAB_*` 环境变量 + 项目 ID 探测；**阶段 B**：分支 / commit / MR 演练 → 单独小 PR）
 - 依赖：W-A-01
-- 并行策略：M0-01 done 后与 W-A-02、W-A-05 并行
+- 并行策略：与 W-A-02、W-A-05 并行
 - 范围：Project Access Token 配置；连通性自检；机器账号身份分支 / commit / MR
 
 ### W-A-04: M0-05 Builder 部署与自检
-- 状态：`pending`
-- 依赖：W-A-00、W-A-01、W-A-02、W-A-03
-- 并行策略：Wave A 收口工单，必须串行最后做
-- 范围：`docker-compose.yml` + README；自检脚本（PG / GitLab / LLM / pre-commit 全链路）
+- 状态：`in_progress`（草案：`scripts/tc_wave_a_check.sh` 串联 `/api/health` 三件套；**尚未**纳入 PG 直连与 pre-commit）
+- 依赖：W-A-00、W-A-01、W-A-02、W-A-03（W-A-02 已满足；W-A-03 阶段 A 已满足，可并行完善脚本）
+- 并行策略：Wave A 收口工单
+- 范围：`docker-compose.yml` + README；启动自检脚本（PG 连接、GitLab 连通、LLM 连通）
 
 ### W-A-05: M0-02 认证与账号
 - 状态：`done`（MVP：`UserProfile` 五角色 + Session/DRF 登录 + 示例门禁 + `seed_builder_demo_users` + `pytest`）
@@ -331,12 +332,12 @@
 
 ## 并行智能体编排
 
-> M0-01 已收口；当前主线并行 **W-A-02（LLM）** 与 **W-A-03（GitLab）**，W-A-04（M0-05 自检）待二者有占位接口后再收口。
+> W-A-02（LLM）MVP 已合入 `cursor` 工作流；W-A-03 阶段 A 已就绪；W-A-04 自检脚本草案已起。
 
 ### Agent-Backend
-- 负责：`timberclaw/backend/` Builder API、认证、后续 LLM/GitLab 适配层
-- 当前状态：`pending`（下一优先：W-A-02 LLM Gateway 占位模块）
-- 已完成：M0-01 骨架 + M0-02 `accounts`（Session 登录 / 角色 / seed / pytest）
+- 负责：`timberclaw/backend/` Builder API、认证、LLM/GitLab 适配层
+- 当前状态：`in_progress`（下一优先：W-A-03 阶段 B — GitLab 写路径）
+- 已完成：M0-01 骨架 + M0-02 `accounts` + M0-03 `llm` + M0-04 `gitlab_integration`（读路径）
 
 ### Agent-Frontend
 - 负责：`frontend/src/timberclaw/` 业务屏（Ant Design）
@@ -345,8 +346,8 @@
 
 ### Agent-Infra
 - 负责：compose、健康检查脚本、环境变量约定
-- 当前状态：`pending`（下一优先：扩展 `scripts/tc_compose_health.sh` 覆盖 LLM/GitLab 占位 URL）
-- 已完成：M0-01 `postgres` + `tc-backend` + `tc_compose_health.sh`
+- 当前状态：`in_progress`（下一优先：W-A-04 — PG / pre-commit 纳入统一自检）
+- 已完成：M0-01 `postgres` + `tc-backend` + `tc_compose_health.sh` + `tc_wave_a_check.sh`（草案）
 
 ### Agent-QA
 - 负责：验收清单、命令验证、阻塞与风险归档
@@ -367,17 +368,17 @@
 
 3. **依赖图风险**：M7-01 / M7-03 / M7-04 已前移到 W-C-Aux；若 Wave C 漏做，Wave F 的 M6-01 无法启动（M6-01 强依赖 M7-04 操作日志）
 
-4. **Wave A 尚未整体 done**：M0-01 / M0-02 已交付，但 M0-03 / M0-04 / M0-05 仍阻塞「全栈 Wave A DoD」；M1~M8 仍不得越级
+4. **Wave A 尚未整体 done**：M0-01 / M0-02 / M0-03 与 M0-04（读路径）已交付；**M0-04 写路径**与 **M0-05 全量自检**仍待收口；M1~M8 仍不得越级
 
 ---
 
 ## 下一步（Next Action）
 
-1. **分支策略**：TimberClaw 日常开发与 PR **默认目标分支为 `cursor`**（见 `docs/CONVENTIONS.md` §4.0）。历史 PR #5 / #6 内容已并入 `cursor`；后续工单请从 `cursor` 开分支并 PR 回 `cursor`。
-2. **并行启动 W-A-02 / W-A-03**：在 `tc-backend` 增加 `GET /api/health/llm` 与 `GET /api/health/gitlab` 配置探测（占位即可，不接真实密钥）。
-3. **W-A-04（M0-05）准备**：把 `docker compose run tc-backend python -m pytest` 与 `scripts/tc_compose_health.sh` 纳入统一 `scripts/tc_wave_a_check.sh`（草案）。
-4. **W-A-00**：在开发者机器执行 `make install-pre-commit-hooks` 复验通过后标 `done`。
-5. **Wave B 起跑**：把 W-B-00（术语映射 ESLint 最小子集）与 W-B-01 需求输入排进下一 Sprint。
+1. **分支策略**：所有开发与 PR **以 `cursor` 为 base / 合并目标**（见 `docs/CONVENTIONS.md` §4.0）。
+2. **W-A-03 阶段 B**：在测试 GitLab 项目上跑通「分支 → commit → MR」最小闭环（可管理命令 + 环境开关）。
+3. **W-A-04 收口**：扩展 `scripts/tc_wave_a_check.sh`：合并 `tc_compose_health.sh`、增加 PG 端口探测、`pytest` 可选步、pre-commit 状态（W-A-00 解锁后）。
+4. **W-A-00**：`make install-pre-commit-hooks` 复验通过后标 `done`。
+5. **Wave B 起跑**：W-B-00 术语映射 ESLint + W-B-01 需求输入中心。
 
 ---
 
