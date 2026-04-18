@@ -13,7 +13,7 @@
 - **上游**：<https://github.com/All-Hands-AI/OpenHands>（MIT 协议）
 - **默认分支**：`main`（受保护）
 
-本 README 是 TimberClaw 侧的入口。OpenHands 原有的 README（在仓库根目录）描述的是上游 OpenHands 项目的定位 / 安装 / 使用方法，**那部分信息对 TimberClaw 也仍然适用，作为开发环境参考**。
+本 README 是 `timberclaw/` 子目录的入口。仓库顶层的 [`README.md`](../README.md) 是 TimberClaw-code 整个项目的门面，按需回看。上游 OpenHands 原始的开发指南仍保留在根 [`AGENTS.md`](../AGENTS.md) 和 [`Development.md`](../Development.md) 等文件里，作为开发环境参考。
 
 ---
 
