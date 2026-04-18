@@ -25,12 +25,13 @@
 | 顺序 | 文档 | 读者 | 内容 |
 |------|------|------|------|
 | 1 | [`docs/PRD.md`](docs/PRD.md) | 所有角色 | **单一真相源**。产品定义、角色、流程、默认实现、MVP 范围、成功标准 |
-| 2 | [`AGENTS.md`](AGENTS.md) | Coding Agent / Human Developer | **Coding Agent 工作指南**（必读）：要做什么、不能做什么、怎么挑工单、怎么处理失败 |
-| 3 | [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md) | 所有角色 | 仓库约定：目录纪律、分支命名、commit 规范、上游同步 |
-| 4 | [`docs/BACKLOG.md`](docs/BACKLOG.md) | Coding Agent / Platform Engineer | 里程碑 M0–M8 + 50+ 张工单（含验收标准） |
-| 5 | [`docs/FORK_CANDIDATES.md`](docs/FORK_CANDIDATES.md) | 参考档案 | 为什么选 OpenHands |
+| 2 | [`docs/EXECUTION_TODO.md`](docs/EXECUTION_TODO.md) | Coding Agent | **唯一调度面**：Wave 工单、Pickup 顺序、DoD / Evidence |
+| 3 | [`AGENTS.md`](AGENTS.md) | Coding Agent / Human Developer | **Coding Agent 工作指南**（必读）：要做什么、不能做什么、怎么处理失败 |
+| 4 | [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md) | 所有角色 | 仓库约定：目录纪律、分支命名、commit 规范、上游同步 |
+| 5 | [`docs/BACKLOG.md`](docs/BACKLOG.md) | Coding Agent / Platform Engineer | 里程碑 M0–M8 + 50+ 张工单（含验收标准） |
+| 6 | [`docs/FORK_CANDIDATES.md`](docs/FORK_CANDIDATES.md) | 参考档案 | 为什么选 OpenHands |
 
-如果这是你第一次进入项目，建议按 1 → 2 → 3 → 4 读一遍再开始写代码。
+如果这是你第一次进入项目，建议按 **1 → 2 → 3 → 4 → 5** 读一遍再开始写代码。
 
 ---
 
@@ -38,9 +39,9 @@
 
 | 项 | 状态 |
 |----|------|
-| PRD | **V1.5**（对齐离散制造真实场景 + 概念隔离 + 仪表盘一等公民 + CSV 主数据 + 双视图） |
+| PRD | **V1.6**（V1.5 业务面 + §15 Coding Agent 工作模式：EXECUTION_TODO 调度、单 PR 单工单、`cursor` base） |
 | BACKLOG | **V1.2**（对齐 PRD V1.5，新增 5 张核心工单） |
-| 代码实现 | **M0-01~M0-04 已落地**：`accounts` + `llm` + `gitlab_integration`（读：`/api/health/gitlab`；写演练：`POST /api/gitlab/smoke-write/` + `TC_GITLAB_ENABLE_WRITE`）；**W-A-04 全量自检**（PG / pre-commit）进行中 |
+| 代码实现 | **M0-01~M0-04 已落地**；**W-A-04（M0-05）已收口**（`tc_wave_a_check.sh` + CI `timberclaw-builder.yml`）；**W-A-00**（本机 `make install-pre-commit-hooks`）仍为 `pending` |
 | Fork 起始 tag | 待 Platform Engineer 在 M0-01 启动时锁定并回写 PRD §2 |
 
 ---
@@ -59,6 +60,21 @@
 ---
 
 ## 如何本地跑起来
+
+### 30 分钟部署清单（Wave A / M0-05）
+
+> 目标：从零到「OpenHands + `/tc` + Django + Postgres + 健康自检」可演示。**时间含首次拉镜像**，机器与网络不同会有浮动。
+
+| 阶段 | 时间（约） | 动作 |
+|------|------------|------|
+| 准备 | 0–3 min | 安装 **Docker Desktop**（或等效）并确保 `docker compose` 可用；`git clone` 本仓库并 `cd` 到仓库根 |
+| 启动 | 3–15 min | `docker compose up --build`（首次拉 `openhands` / `postgres` / `tc-backend` 镜像，可能较慢） |
+| 验证 | 15–22 min | 浏览器打开 `http://127.0.0.1:3000`（OpenHands）、`http://127.0.0.1:3000/tc`（TimberClaw 占位壳）、`curl -fsS http://127.0.0.1:8000/api/health/`（应返回 `status=ok` 且 `checks.database.ok=true`） |
+| 演示账号 | 22–25 min | `docker compose exec tc-backend python manage.py seed_builder_demo_users`（需已设置 `TC_DEMO_PASSWORD` 等，见 `timberclaw/backend/README.md`） |
+| 自检 | 25–30 min | `bash scripts/tc_wave_a_check.sh`（Postgres 端口 + `/api/health/` + LLM + GitLab）；可选 `TC_WAVE_A_RUN_PYTEST=1 bash scripts/tc_wave_a_check.sh` 跑容器内 pytest |
+| pre-commit（本机） | 视环境 | **W-A-00 未完成前**：仓库级钩子由 CI `.github/workflows/lint.yml` 覆盖；本地自检请用 `TC_WAVE_A_RUN_PRE_COMMIT=1 bash scripts/tc_wave_a_check.sh`（需已 `pip install pre-commit` 且配置好） |
+
+**Coding Agent 下一工单**：打开 [`docs/EXECUTION_TODO.md`](docs/EXECUTION_TODO.md)，按 PRD §15.3 Pickup；Wave A 仅剩 **W-A-00** 时，收口后进入 **W-B-00**。
 
 ### TimberClaw 业务骨架（M0-01 + M0-02）
 
@@ -99,7 +115,7 @@ TC_WAVE_A_RUN_PRE_COMMIT=1 bash scripts/tc_wave_a_check.sh
 bash scripts/tc_compose_health.sh
 ```
 
-完整安装说明与自检（GitLab / LLM / pre-commit 全链路）仍以 **M0-05** 收口为准；上游 OpenHands 的本地开发流程见根目录 `README.md` 与 `AGENTS.md`。
+Wave A 自检与 CI 已按 **M0-05** 收口；本机 pre-commit 闸门见 **W-A-00**。上游 OpenHands 的本地开发流程见根目录 `README.md` 与 `AGENTS.md`。
 
 ---
 

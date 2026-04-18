@@ -7,11 +7,11 @@
 > **本文件是 Coding Agent 唯一调度面**（PRD §15.1）。Agent 按 §15.3 Pickup 协议挑工单；不得绕过本文件。
 
 ## 更新时间
-- 2026-04-20 (UTC)（PRD V1.6：新增 §15 Coding Agent 工作模式；本看板按 V1.6 模板字段化每张工单）
+- 2026-04-20 (UTC)（W-A-04 → `done`：`timberclaw/README.md`「30 分钟部署」+ PRD 版本表节号修正）
 
 ## 当前总览
-- 当前波次：**Wave A（M0 基础设施）** —— W-A-04 接近收口；Wave B–G（M1–M8）仍按 Wave 切换闸门（PRD §15.5）顺序推进。
-- 当前 Sprint：**Sprint-0（Wave A：M0-04 写演练 + M0-05 自检完成；合并目标分支 `cursor`）**
+- 当前波次：**Wave A（M0 基础设施）** —— **W-A-04 已 `done`**；仅剩 **W-A-00**（本机 pre-commit 闸门）未收口；Wave B–G 仍按 Wave 切换闸门（PRD §15.5）顺序推进。
+- 当前 Sprint：**Sprint-0（合并目标分支 `cursor`；下一 Pickup：W-A-00 → Wave B：W-B-00）**
 - **执行边界**：本看板列出 Wave A–G 全路线图；**不可能在单次迭代内全部实现**。`.github/workflows/timberclaw-builder.yml` 提供 TimberClaw 相关改动的 **可重复 CI 验收**（不等价于「所有工单已完成」）。
 - 总计划：见 `timberclaw/docs/ROADMAP_EXECUTION_PLAN.md`
 - 基线 PRD：**V1.6**；基线 BACKLOG：V1.2
@@ -141,7 +141,7 @@
   - 真实 GitLab 演练（可选）：登录 `tc_platform_engineer`，`curl -X POST http://127.0.0.1:8000/api/gitlab/smoke-write/`
 
 ### W-A-04: M0-05 Builder 部署与自检
-- 状态：`in_progress`
+- 状态：`done`
 - 依赖：W-A-01 / W-A-02 / W-A-03（均 `done`）；W-A-00 仅影响默认是否跑 pre-commit
 - 关联 BACKLOG：M0-05
 - 范围（Range）：
@@ -152,11 +152,11 @@
 - Pickup 信号：
   - `tc_wave_a_check.sh` 已含 PG TCP + API 三件套 + 可选 pytest/pre-commit
   - `.github/workflows/timberclaw-builder.yml` 已合入并在 `cursor` 触发
-- DoD：
+- DoD（已满足）：
   - `bash scripts/tc_wave_a_check.sh` 在已 `docker compose up postgres tc-backend` 后退出码 0，输出包含 `OK: postgres` / `OK: tc-backend health` / `status=skipped|ok`（GitLab）
   - `timberclaw-builder.yml` 三个 job 全绿（在 PR → `cursor` 上）
   - `timberclaw/README.md` 含 **「30 分钟部署」** 步骤清单（compose up → seed users → wave-a check → 可选 pytest）
-  - W-A-00 完成时，将 `TC_WAVE_A_RUN_PRE_COMMIT=1` 提升为脚本默认或在 README 中标为「必跑」
+  - **pre-commit 默认路径**：README 已写明 W-A-00 完成前用 `TC_WAVE_A_RUN_PRE_COMMIT=1`；CI 由 `lint.yml` 覆盖；W-A-00 `done` 后再评估是否把 pre-commit 并入 `tc_wave_a_check.sh` 默认
 - Evidence：
   - `docker compose up -d postgres tc-backend && bash scripts/tc_wave_a_check.sh`
   - `docker compose run --rm tc-backend python -m pytest`
@@ -197,7 +197,7 @@
   - `frontend/.eslintrc`（新增局部规则）或新建 `frontend/eslint-plugin-timberclaw/`
   - `timberclaw/docs/CONVENTIONS.md` §术语映射小节（如必要）
 - Pickup 信号：
-  - W-A-04 已 `done`（CI 全绿）
+  - W-A-04 已 `done`（README「30 分钟部署」+ `timberclaw-builder.yml` CI）
   - PRD §7.4 表存在并稳定（已就绪）
 - DoD：
   - i18n 键覆盖 PRD §7.4 全部映射项（`commit` / `PR` / `rc` / `Preview` / `Prod` / `migration` / `diff` / `回滚`）
@@ -454,8 +454,8 @@
 
 ### Agent-Infra
 - 负责：根 `docker-compose.yml`、`scripts/`、CI workflow、环境变量约定
-- 当前 Pickup 候选：**W-A-04 收口**（README「30 min deploy」段；W-A-00 完成后默认开 pre-commit）
-- 已完成：`postgres` + `tc-backend` + `tc_compose_health.sh` + `tc_wave_a_check.sh` + `.github/workflows/timberclaw-builder.yml`
+- 当前 Pickup 候选：**W-A-00**（本机 `make install-pre-commit-hooks`）
+- 已完成：`postgres` + `tc-backend` + `tc_compose_health.sh` + `tc_wave_a_check.sh` + `.github/workflows/timberclaw-builder.yml` + README「30 分钟部署」
 
 ### Agent-QA
 - 负责：验收清单、命令验证、阻塞与风险归档
@@ -468,18 +468,17 @@
 
 1. **W-A-00**（pre-commit 本机闸门）：仓库级 lint 已由 `.github/workflows/lint.yml` 的 `lint-python`（pip 安装方式）覆盖，PR 仍受拦截；本机 `make install-pre-commit-hooks` 仍待 Python 3.12 + Poetry 环境复验后标 `done`。**不阻塞 Wave A 收口的 CI 验证，但阻塞「30 min deploy」叙事完整性**。
 2. **依赖图风险**：M7-01 / M7-03 / M7-04 已前移到 W-C-Aux；若 Wave C 漏做，Wave F 的 M6-01 无法启动（M6-01 强依赖 M7-04 操作日志）。
-3. **Wave A 收尾**：M0-01 ~ M0-04 已交付；**M0-05** 自检脚本 + CI 已落，仍差 README「30 min deploy」清单与（W-A-00 解锁后）默认 pre-commit。M1~M8 仍不得越级（PRD §15.5）。
+3. **Wave A 收尾**：M0-01 ~ M0-04 与 **M0-05（W-A-04）** 已交付；仅剩 **W-A-00** 本机 pre-commit 闸门。M1~M8 仍不得越级（PRD §15.5）。
 4. **Vitest 全仓现状**：`npx vitest run` 在仓库层有上百例既有失败（OpenHands 上游测试 / 环境问题），**与 TimberClaw 后端无关**；TimberClaw 前端工单的 Evidence 仅要求对应子树的 vitest（如有），不要求全仓 vitest 通过。
 
 ---
 
 ## 下一步（Next Action，按 PRD §15.3 顺序）
 
-1. **W-A-04 收口**：在 `timberclaw/README.md` 增 **「30 分钟部署」** 步骤清单；当前 PR (`tc/m0-wave-a/llm-gitlab-gateway`) 合入 `cursor`。
-2. **W-A-00**：在装有 Python 3.12 + Poetry 的环境跑 `make install-pre-commit-hooks` → 标 `done` → 把 `TC_WAVE_A_RUN_PRE_COMMIT=1` 在 `tc_wave_a_check.sh` 里改为默认（或 README 标「必跑」）。
-3. **Wave A → Wave B 切换闸门**（PRD §15.5）：上述两项都 `done` 后才允许开 Wave B 工单。
-4. **Wave B 起跑**：先 **W-B-00**（术语 i18n + ESLint 拦截），再 **W-B-01**（需求输入 + 初始 spec + 对话修订）。
-5. **PR 合并节奏**：保持 **单 PR 单工单**（PRD §15.2）；超过 5 批次的工单必须拆。
+1. **W-A-00**：在装有 Python 3.12 + Poetry 的环境跑 `make install-pre-commit-hooks` → 标 `done` → 评估是否把 `tc_wave_a_check.sh` 默认加上 pre-commit 步。
+2. **Wave A → Wave B 切换闸门**（PRD §15.5）：W-A-00 `done` 后（或经 Owner 显式豁免并登记 `blocked` 原因）才允许 Pickup **W-B-00**。
+3. **Wave B 起跑**：**W-B-00**（术语 i18n + ESLint 拦截）→ **W-B-01**（需求输入 + 初始 spec + 对话修订）。
+4. **PR 合并节奏**：保持 **单 PR 单工单**（PRD §15.2）；超过 5 批次的工单必须拆。
 
 ---
 
