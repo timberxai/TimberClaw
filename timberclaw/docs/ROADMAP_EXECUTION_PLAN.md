@@ -2,7 +2,7 @@
 
 > 目标：把 `BACKLOG.md` 中的 M0~M8 从“工单目录”推进为“可持续执行的工程计划”，用于日常迭代、并行分工、风险控制与验收闭环。
 >
-> 基线文档：`PRD.md`（V1.5）+ `BACKLOG.md`（V1.2）+ `CONVENTIONS.md`（V1.0）。
+> 基线文档：`PRD.md`（**V1.6**，含 §15 Coding Agent 工作模式）+ `BACKLOG.md`（V1.2）+ `CONVENTIONS.md`（**V1.2**）+ `EXECUTION_TODO.md`（唯一调度面）。
 
 ---
 
