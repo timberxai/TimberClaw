@@ -80,5 +80,21 @@
         "project": ["**/tsconfig.json"],
       },
     },
+    {
+      "files": ["src/timberclaw/**/*.ts", "src/timberclaw/**/*.tsx"],
+      "rules": {
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "Literal[value=/merge request/i]",
+            "message": "使用 builderTerminology（PRD §7.4 / W-B-00）"
+          },
+          {
+            "selector": "Literal[value=/\\brc-/i]",
+            "message": "使用 formatReleaseCandidateLabel（W-B-00）"
+          }
+        ]
+      }
+    }
   ],
 }
