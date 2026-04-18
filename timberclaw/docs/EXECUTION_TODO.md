@@ -332,12 +332,12 @@
 
 ## 并行智能体编排
 
-> W-A-02（LLM）MVP 已合入 `cursor` 工作流；W-A-03 阶段 A 已就绪；W-A-04 自检脚本草案已起。
+> W-A-02（LLM）MVP 与 W-A-03（含写路径 `smoke-write`）已落在 PR → `cursor`；W-A-04 自检脚本草案已起。
 
 ### Agent-Backend
 - 负责：`timberclaw/backend/` Builder API、认证、LLM/GitLab 适配层
-- 当前状态：`in_progress`（下一优先：W-A-03 阶段 B — GitLab 写路径）
-- 已完成：M0-01 骨架 + M0-02 `accounts` + M0-03 `llm` + M0-04 `gitlab_integration`（读路径）
+- 当前状态：`in_progress`（下一优先：W-A-04 全量自检与文档「30 min deploy」）
+- 已完成：M0-01 骨架 + M0-02 `accounts` + M0-03 `llm` + M0-04 `gitlab_integration`（读 + `smoke-write` 写演练）
 
 ### Agent-Frontend
 - 负责：`frontend/src/timberclaw/` 业务屏（Ant Design）
@@ -368,14 +368,14 @@
 
 3. **依赖图风险**：M7-01 / M7-03 / M7-04 已前移到 W-C-Aux；若 Wave C 漏做，Wave F 的 M6-01 无法启动（M6-01 强依赖 M7-04 操作日志）
 
-4. **Wave A 尚未整体 done**：M0-01 / M0-02 / M0-03 与 M0-04（读路径）已交付；**M0-04 写路径**与 **M0-05 全量自检**仍待收口；M1~M8 仍不得越级
+4. **Wave A 尚未整体 done**：M0-01 / M0-02 / M0-03 / M0-04（含写演练 API）已交付；**M0-05 全量自检**（PG / pre-commit）仍待收口；M1~M8 仍不得越级
 
 ---
 
 ## 下一步（Next Action）
 
 1. **分支策略**：所有开发与 PR **以 `cursor` 为 base / 合并目标**（见 `docs/CONVENTIONS.md` §4.0）。
-2. **W-A-03 阶段 B**：在测试 GitLab 项目上跑通「分支 → commit → MR」最小闭环（可管理命令 + 环境开关）。
+2. **合并 PR**：将 `tc/m0-wave-a/llm-gitlab-gateway` 合入 `cursor` 后，新分支从 `cursor` 切出继续 W-A-04。
 3. **W-A-04 收口**：扩展 `scripts/tc_wave_a_check.sh`：合并 `tc_compose_health.sh`、增加 PG 端口探测、`pytest` 可选步、pre-commit 状态（W-A-00 解锁后）。
 4. **W-A-00**：`make install-pre-commit-hooks` 复验通过后标 `done`。
 5. **Wave B 起跑**：W-B-00 术语映射 ESLint + W-B-01 需求输入中心。
