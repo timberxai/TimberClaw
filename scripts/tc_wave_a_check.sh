@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Wave A 统一自检（M0-05 / W-A-04）：Postgres 宿主机端口 + Django 健康链 + 可选 pytest / pre-commit
+# Wave A 统一自检（M0-05 / W-A-04）：Postgres 宿主机端口 + Django 健康链（/api/health/ 含 DB SELECT 1）+ 可选 pytest / pre-commit
 #
 # 用法（仓库根目录，且 tc-backend 已对宿主暴露 8000）：
 #   bash scripts/tc_wave_a_check.sh

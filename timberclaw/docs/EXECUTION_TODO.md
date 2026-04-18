@@ -5,10 +5,10 @@
 > 状态定义：`pending`（未开始）/ `in_progress`（进行中）/ `blocked`（阻塞）/ `done`（完成）
 
 ## 更新时间
-- 2026-04-20 (UTC)
+- 2026-04-20 (UTC)（Wave A：`/api/health/` 增加数据库探测）
 
 ## 当前总览
-- 当前波次：**Wave A（M0 基础设施）**
+- 当前波次：**Wave A（M0 基础设施）**；Wave B–G（M1–M8）仍见本文件后续章节与 `ROADMAP_EXECUTION_PLAN.md`，**未在单分支内「一次做完」**。
 - 当前 Sprint：**Sprint-0（Wave A：M0-01~M0-04 推进中；合并目标分支 `cursor`）**
 - 总计划：见 `timberclaw/docs/ROADMAP_EXECUTION_PLAN.md`
 - 基线 PRD：V1.5；基线 BACKLOG：V1.2
@@ -77,7 +77,7 @@
 - 范围：Project Access Token 配置；连通性自检；机器账号身份分支 / commit / MR
 
 ### W-A-04: M0-05 Builder 部署与自检
-- 状态：`in_progress`（`scripts/tc_wave_a_check.sh`：PG 宿主机 TCP + 复用 `tc_compose_health.sh` + LLM/GitLab；**可选** `TC_WAVE_A_RUN_PYTEST` / `TC_WAVE_A_RUN_PRE_COMMIT`；待 W-A-00 后把 pre-commit 纳入默认 CI/文档「必跑」）
+- 状态：`in_progress`（`tc_wave_a_check.sh`：PG 宿主机 TCP + `tc_compose_health.sh`（`/api/health/` 含 **DB**）+ LLM/GitLab；**可选** `TC_WAVE_A_RUN_PYTEST` / `TC_WAVE_A_RUN_PRE_COMMIT`；待 W-A-00 后把 pre-commit 纳入默认 CI/文档「必跑」）
 - 依赖：W-A-00、W-A-01、W-A-02、W-A-03（均已满足；W-A-00 仍影响 pre-commit 是否默认可跑）
 - 并行策略：Wave A 收口工单
 - 范围：`docker-compose.yml` + README；启动自检脚本（PG 可达、GitLab 连通、LLM 连通）

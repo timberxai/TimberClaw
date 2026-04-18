@@ -14,7 +14,7 @@ python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
 ```
 
-健康检查：`GET /api/health/`
+健康检查：`GET /api/health/`（含 `checks.database`：`SELECT 1`；失败时 HTTP **503**）
 
 ## LLM Gateway（M0-03）
 
