@@ -71,7 +71,7 @@
 - 备注：调用统计当前以 **Django Admin → LLM 调用记录** 查看；后续可接 Wave G 指标看板
 
 ### W-A-03: M0-04 GitLab 接入
-- 状态：`in_progress`（**阶段 A done**：`/api/health/gitlab/` + `TC_GITLAB_*` 环境变量 + 项目 ID 探测；**阶段 B**：分支 / commit / MR 演练 → 单独小 PR）
+- 状态：`done`（阶段 A：`/api/health/gitlab/` + `TC_GITLAB_*`；阶段 B：`POST /api/gitlab/smoke-write/` 分支 / 提交 / MR，`TC_GITLAB_ENABLE_WRITE=1` + Platform Engineer）
 - 依赖：W-A-01
 - 并行策略：与 W-A-02、W-A-05 并行
 - 范围：Project Access Token 配置；连通性自检；机器账号身份分支 / commit / MR

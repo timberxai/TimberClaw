@@ -109,3 +109,4 @@ TC_GITLAB_URL = os.environ.get("TC_GITLAB_URL", "").rstrip("/")
 TC_GITLAB_TOKEN = os.environ.get("TC_GITLAB_TOKEN", "")
 TC_GITLAB_PROJECT_ID = os.environ.get("TC_GITLAB_PROJECT_ID", "").strip()
 TC_GITLAB_SSL_VERIFY = os.environ.get("TC_GITLAB_SSL_VERIFY", "1") == "1"
+TC_GITLAB_ENABLE_WRITE = os.environ.get("TC_GITLAB_ENABLE_WRITE", "0") == "1"

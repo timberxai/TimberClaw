@@ -28,6 +28,11 @@ python manage.py runserver 0.0.0.0:8000
 - 可选：`TC_GITLAB_PROJECT_ID` — 额外 `GET /api/v4/projects/:id` 探测项目可读性
 - `TC_GITLAB_SSL_VERIFY=0` 仅用于内网自签证书调试
 
+### 写路径演练（阶段 B）
+
+- `POST /api/gitlab/smoke-write/` — 在已配置项目中创建临时分支、单文件提交、并打开 MR（`remove_source_branch=true`）
+- 需要 **Session 登录**且用户角色为 **Platform Engineer**；并设置 **`TC_GITLAB_ENABLE_WRITE=1`**（默认关闭，避免误触生产仓库）
+
 ## 认证（M0-02）
 
 - `GET /api/auth/csrf/` — 下发 CSRF Cookie（浏览器对接 `/tc` 前调用）

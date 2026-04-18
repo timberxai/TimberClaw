@@ -13,3 +13,4 @@
 | 2026-04-19 | `timberclaw/backend/Dockerfile` | 复制 `pytest.ini` / `tests/` 以便 `docker compose run tc-backend python -m pytest` | `[upstream-patch]` |
 | 2026-04-19 | `.gitignore`（根） | 取消忽略 `timberclaw/backend/requirements.txt`，使 Django 依赖清单可被版本控制 | `[upstream-patch]` |
 | 2026-04-20 | `docker-compose.yml` | `tc-backend` 增加 LLM / GitLab 相关环境变量占位（与 M0-03 / M0-04 对齐） | `[upstream-patch]` |
+| 2026-04-20 | `docker-compose.yml` | `TC_GITLAB_ENABLE_WRITE` 默认 `0`，显式开启后才允许 `smoke-write` 演练 | `[upstream-patch]` |
