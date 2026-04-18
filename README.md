@@ -93,7 +93,7 @@ docker compose up --build
 
 ## 怎么参与
 
-- **所有**改动通过 Git 分支 + PR（Merge Request）进入 `main`；禁止直推
+- **所有** TimberClaw 相关改动通过 Git 分支 + PR（Merge Request）进入 **`cursor`**；禁止直推 `cursor` 与 `main`
 - Agent 分支：`tc/<spec_version>/<short_desc>`
 - 人工分支：`dev/<github-handle>/<short_desc>`
 - Commit 信息格式、`[tc-agent]` / `[upstream-patch]` 标记规则：见 [`CONVENTIONS.md`](timberclaw/docs/CONVENTIONS.md) §4

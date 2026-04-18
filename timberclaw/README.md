@@ -11,7 +11,8 @@
 - **这是什么**：OpenHands 的一个 fork，TimberClaw-code 的 monorepo
 - **目标**：产出一个能够为离散制造工厂生成轻量 MES / BI 系统的 Builder
 - **上游**：<https://github.com/All-Hands-AI/OpenHands>（MIT 协议）
-- **默认分支**：`main`（受保护）
+- **TimberClaw 工作主分支**：`cursor`（日常开发与 PR 合并目标；请勿直推）
+- **`main`**：保留用于上游 / 发布对齐；功能迭代请走 `cursor`
 
 本 README 是 `timberclaw/` 子目录的入口。仓库顶层的 [`README.md`](../README.md) 是 TimberClaw-code 整个项目的门面，按需回看。上游 OpenHands 原始的开发指南仍保留在根 [`AGENTS.md`](../AGENTS.md) 和 [`Development.md`](../Development.md) 等文件里，作为开发环境参考。
 
@@ -91,7 +92,7 @@ bash scripts/tc_compose_health.sh
 
 ## 贡献与协作
 
-- 任何 Agent / 人工变更都必须通过 Git 分支 + PR，禁止直推 `main`
+- 任何 Agent / 人工变更都必须通过 Git 分支 + PR，**合并到 `cursor`**，禁止直推 `cursor` 与 `main`
 - 分支 / commit 命名见 [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md) §4
 - Agent 工作前必读 [`AGENTS.md`](AGENTS.md)
 

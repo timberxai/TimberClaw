@@ -373,7 +373,7 @@
 
 ## 下一步（Next Action）
 
-1. **合并顺序**：若 `tc/m0-01/scaffold-batch2` 尚未进 `main`，先合并 M0-01 PR；再合并本分支 M0-02 PR（或一次性合并到 `main` 后删除中间分支）。
+1. **分支策略**：TimberClaw 日常开发与 PR **默认目标分支为 `cursor`**（见 `docs/CONVENTIONS.md` §4.0）。历史 PR #5 / #6 内容已并入 `cursor`；后续工单请从 `cursor` 开分支并 PR 回 `cursor`。
 2. **并行启动 W-A-02 / W-A-03**：在 `tc-backend` 增加 `GET /api/health/llm` 与 `GET /api/health/gitlab` 配置探测（占位即可，不接真实密钥）。
 3. **W-A-04（M0-05）准备**：把 `docker compose run tc-backend python -m pytest` 与 `scripts/tc_compose_health.sh` 纳入统一 `scripts/tc_wave_a_check.sh`（草案）。
 4. **W-A-00**：在开发者机器执行 `make install-pre-commit-hooks` 复验通过后标 `done`。
