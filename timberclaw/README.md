@@ -39,7 +39,7 @@
 |----|------|
 | PRD | **V1.5**（对齐离散制造真实场景 + 概念隔离 + 仪表盘一等公民 + CSV 主数据 + 双视图） |
 | BACKLOG | **V1.2**（对齐 PRD V1.5，新增 5 张核心工单） |
-| 代码实现 | **M0-01 Batch 2 已落地**：`/tc/*`（Ant Design 占位）、`timberclaw/backend/`（Django + `/api/health/`）、`docker-compose.yml` 扩展 `postgres` + `tc-backend`；Batch 3 需本机 Docker 验证 |
+| 代码实现 | **M0-01 已收口**；**M0-02（认证）MVP 已落地**：`accounts`（五角色 `UserProfile`、Session 登录 API、`seed_builder_demo_users`、`docker compose run tc-backend python -m pytest`）；下一步 **W-A-02 / W-A-03**（LLM / GitLab 占位）→ **W-A-04**（M0-05 统一自检） |
 | Fork 起始 tag | 待 Platform Engineer 在 M0-01 启动时锁定并回写 PRD §2 |
 
 ---
@@ -59,7 +59,7 @@
 
 ## 如何本地跑起来
 
-### TimberClaw 业务骨架（M0-01 进行中）
+### TimberClaw 业务骨架（M0-01 + M0-02）
 
 在仓库根目录：
 
@@ -71,6 +71,13 @@ docker compose up --build
 - **工厂业务搭建（占位）**：`http://127.0.0.1:3000/tc`（Ant Design 业务壳，面向工厂 IT）
 - **TimberClaw Django API**：`http://127.0.0.1:8000/api/health/`（健康检查）
 - **PostgreSQL（Builder 元数据 / 业务库占位）**：宿主机端口默认 `5433`（可用环境变量 `TC_POSTGRES_PORT` 覆盖）
+
+演示账号与后端测试（**仅内网 / 开发**）：
+
+```bash
+docker compose exec tc-backend python manage.py seed_builder_demo_users
+docker compose run --rm tc-backend python -m pytest
+```
 
 冒烟脚本（需 `tc-backend` 已启动）：
 

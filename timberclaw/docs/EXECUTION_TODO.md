@@ -9,7 +9,7 @@
 
 ## 当前总览
 - 当前波次：**Wave A（M0 基础设施）**
-- 当前 Sprint：**Sprint-0（M0-01 优先 + W-A-00 阻塞修复）**
+- 当前 Sprint：**Sprint-0（M0-01 已收口 + M0-02 认证落地中）**
 - 总计划：见 `timberclaw/docs/ROADMAP_EXECUTION_PLAN.md`
 - 基线 PRD：V1.5；基线 BACKLOG：V1.2
 - 下一里程碑出口：`docker compose up` 可拉起 Builder 基础能力（含 OpenHands 原屏 + `/tc/*` 占位 + PG）
@@ -50,7 +50,7 @@
   - 写入 `M0-05 自检脚本`：自检列表包含 pre-commit 链路通过
 
 ### W-A-01: M0-01 Builder 项目脚手架
-- 状态：`in_progress`
+- 状态：`done`（Batch 1–3 已完成；compose 全链路已由 Owner 确认）
 - 依赖：W-A-00（pre-commit 缺失不影响代码落地，但影响 commit 前校验，建议并行修复）
 - 关联 BACKLOG：M0-01
 - 范围摘要：
@@ -61,7 +61,7 @@
 - 本次执行批次（Batch）
   - Batch 1：计划与任务切分（done）
   - Batch 2：仓库与目录落位初始化（done：`/tc/*` + Django + compose 骨架）
-  - Batch 3：运行与连通性自检（in_progress：`docker compose` + `scripts/tc_compose_health.sh`）
+  - Batch 3：运行与连通性自检（done）
 
 ### W-A-02: M0-03 LLM Gateway 抽象
 - 状态：`pending`
@@ -82,11 +82,12 @@
 - 范围：`docker-compose.yml` + README；自检脚本（PG / GitLab / LLM / pre-commit 全链路）
 
 ### W-A-05: M0-02 认证与账号
-- 状态：`pending`
+- 状态：`done`（MVP：`UserProfile` 五角色 + Session/DRF 登录 + 示例门禁 + `seed_builder_demo_users` + `pytest`）
 - 依赖：W-A-01
-- 并行策略：M0-01 done 后与 W-A-02 / W-A-03 并行
+- 并行策略：与 W-A-02 / W-A-03 并行（本工单已可在 `tc-backend` 独立验收）
 - 范围：Django 内置 auth + 五类角色（Owner / Reviewer / Admin / PE / Human Developer）+ 角色 × 动作权限
 - 注意：业务使用者（End User，PRD §4.6）不在 Builder 账号体系内，仅在生成系统的运行时存在
+- 验收命令（需 Docker）：`docker compose run --rm tc-backend python -m pytest`
 
 ---
 
@@ -330,27 +331,27 @@
 
 ## 并行智能体编排
 
-> 与上方 W-A-01 Batch 2 绑定：当前正在 M0-01 Batch 2 上同时跑这三路。
+> M0-01 已收口；当前主线并行 **W-A-02（LLM）** 与 **W-A-03（GitLab）**，W-A-04（M0-05 自检）待二者有占位接口后再收口。
 
 ### Agent-Backend
-- 负责：Django 项目骨架、后端配置、API 占位
-- 当前状态：`in_progress`
-- 当前任务：M0-01 Batch 2 → `timberclaw/backend/` 目录骨架 + settings 拆分
+- 负责：`timberclaw/backend/` Builder API、认证、后续 LLM/GitLab 适配层
+- 当前状态：`pending`（下一优先：W-A-02 LLM Gateway 占位模块）
+- 已完成：M0-01 骨架 + M0-02 `accounts`（Session 登录 / 角色 / seed / pytest）
 
 ### Agent-Frontend
-- 负责：`frontend/src/timberclaw/` 路由挂载与 AntD 占位页
-- 当前状态：`in_progress`
-- 当前任务：M0-01 Batch 2 → `/tc/*` 路由 + AntD ProLayout 占位 + `dashboards/` `master-data/` 预留目录
+- 负责：`frontend/src/timberclaw/` 业务屏（Ant Design）
+- 当前状态：`pending`（下一优先：对接 `/api/me` 展示当前登录角色；术语映射 W-B-00）
+- 已完成：M0-01 `/tc/*` 占位与预留目录
 
 ### Agent-Infra
-- 负责：compose 扩展、自检脚本、环境变量约定
-- 当前状态：`in_progress`
-- 当前任务：M0-01 Batch 2 → `docker-compose.yml` 增加 Django + PG 服务
+- 负责：compose、健康检查脚本、环境变量约定
+- 当前状态：`pending`（下一优先：扩展 `scripts/tc_compose_health.sh` 覆盖 LLM/GitLab 占位 URL）
+- 已完成：M0-01 `postgres` + `tc-backend` + `tc_compose_health.sh`
 
 ### Agent-QA
 - 负责：验收清单、命令验证、阻塞与风险归档
 - 当前状态：`in_progress`
-- 说明：维护执行看板与总计划文档；同时跟进 W-A-00 阻塞修复
+- 说明：维护执行看板；跟进 W-A-00 pre-commit 复验与 Wave A 收口证据链
 
 ---
 
@@ -362,22 +363,21 @@
    - 修复策略：重建 Poetry 虚拟环境目录与缓存；纳入 M0-05 自检列表
    - 临时降级：M0-01 Batch 2 / Batch 3 期间，本地以"能跑的都跑"补偿（手工 lint / typecheck），不接受跳过 CI
 
-2. **Batch 3 环境**：部分自动化环境无 Docker daemon，无法在此验证 `docker compose build`；需在开发者机器或 CI 上跑通 `docker compose up --build` 并回写证据
+2. ~~**Batch 3 环境**~~：已由 Owner 在本地 Docker 确认；CI 侧待 M0-05 接入统一自检
 
 3. **依赖图风险**：M7-01 / M7-03 / M7-04 已前移到 W-C-Aux；若 Wave C 漏做，Wave F 的 M6-01 无法启动（M6-01 强依赖 M7-04 操作日志）
 
-4. M0 尚未完成，M1~M8 只能做计划与队列管理，不能越级实现依赖工单
+4. **Wave A 尚未整体 done**：M0-01 / M0-02 已交付，但 M0-03 / M0-04 / M0-05 仍阻塞「全栈 Wave A DoD」；M1~M8 仍不得越级
 
 ---
 
 ## 下一步（Next Action）
 
-1. **并行启动**：
-   - W-A-00：修复 Poetry / pre-commit 环境（Agent-Infra 主导）
-   - W-A-01 Batch 2：落地最小路由骨架（`/tc/*`）+ Django 目录骨架 + compose 扩展（Backend / Frontend / Infra 三 Agent 并行）
-2. **W-A-01 Batch 3**：`docker compose up` 启动链路验证 + 输出最小验收记录
-3. **W-A-01 完成后**：按并行策略同时拉起 W-A-02（M0-03）/ W-A-03（M0-04）/ W-A-05（M0-02），W-A-04（M0-05）作为 Wave A 收口最后做
-4. **Wave A 收口前**：把 W-B-00（概念隔离最小子集）排上 Wave B 起跑线，与 W-B-01 同步启动
+1. **合并顺序**：若 `tc/m0-01/scaffold-batch2` 尚未进 `main`，先合并 M0-01 PR；再合并本分支 M0-02 PR（或一次性合并到 `main` 后删除中间分支）。
+2. **并行启动 W-A-02 / W-A-03**：在 `tc-backend` 增加 `GET /api/health/llm` 与 `GET /api/health/gitlab` 配置探测（占位即可，不接真实密钥）。
+3. **W-A-04（M0-05）准备**：把 `docker compose run tc-backend python -m pytest` 与 `scripts/tc_compose_health.sh` 纳入统一 `scripts/tc_wave_a_check.sh`（草案）。
+4. **W-A-00**：在开发者机器执行 `make install-pre-commit-hooks` 复验通过后标 `done`。
+5. **Wave B 起跑**：把 W-B-00（术语映射 ESLint 最小子集）与 W-B-01 需求输入排进下一 Sprint。
 
 ---
 

@@ -35,9 +35,12 @@
 - 目录与路由最小骨架落地（优先无侵入）
 - 识别必要上游改动点并标注 `[upstream-patch]` 计划
 
-### Batch 3（进行中）
-- compose 运行链路验证
-- 记录验收结果与阻塞项
+### Batch 3（已完成）
+- compose 运行链路验证（`docker compose up --build` + `scripts/tc_compose_health.sh`）
+- 验收结果：OpenHands 3000、`/tc` AntD 占位、`tc-backend` `/api/health/`、Postgres 健康检查通过（由 Owner 侧确认）
+
+### 后续（M0-02+）
+- Builder 认证与角色矩阵在 `timberclaw/backend/accounts/` 演进；M0-05 统一自检脚本
 
 ## 4. 验收映射（M0-01）
 
