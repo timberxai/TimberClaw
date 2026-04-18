@@ -39,7 +39,7 @@
 |----|------|
 | PRD | **V1.5**（对齐离散制造真实场景 + 概念隔离 + 仪表盘一等公民 + CSV 主数据 + 双视图） |
 | BACKLOG | **V1.2**（对齐 PRD V1.5，新增 5 张核心工单） |
-| 代码实现 | 尚未开始（处于 bootstrap 阶段） |
+| 代码实现 | **M0-01 Batch 2 已落地**：`/tc/*`（Ant Design 占位）、`timberclaw/backend/`（Django + `/api/health/`）、`docker-compose.yml` 扩展 `postgres` + `tc-backend`；Batch 3 需本机 Docker 验证 |
 | Fork 起始 tag | 待 Platform Engineer 在 M0-01 启动时锁定并回写 PRD §2 |
 
 ---
@@ -59,15 +59,26 @@
 
 ## 如何本地跑起来
 
-MVP 的本地启动方式尚未搭建（属于 BACKLOG **M0-01 + M0-05**）。上游 OpenHands 的启动流程见根目录 `README.md` 和 `AGENTS.md`，供参考。
+### TimberClaw 业务骨架（M0-01 进行中）
 
-搭建完成后，启动命令预期为：
+在仓库根目录：
 
 ```bash
-docker compose up
+docker compose up --build
 ```
 
-具体步骤以 M0-05 完成后的 README 为准。
+- **OpenHands**：`http://127.0.0.1:3000`（上游 UI）
+- **工厂业务搭建（占位）**：`http://127.0.0.1:3000/tc`（Ant Design 业务壳，面向工厂 IT）
+- **TimberClaw Django API**：`http://127.0.0.1:8000/api/health/`（健康检查）
+- **PostgreSQL（Builder 元数据 / 业务库占位）**：宿主机端口默认 `5433`（可用环境变量 `TC_POSTGRES_PORT` 覆盖）
+
+冒烟脚本（需 `tc-backend` 已启动）：
+
+```bash
+bash scripts/tc_compose_health.sh
+```
+
+完整安装说明与自检（GitLab / LLM / pre-commit 全链路）仍以 **M0-05** 收口为准；上游 OpenHands 的本地开发流程见根目录 `README.md` 与 `AGENTS.md`。
 
 ---
 

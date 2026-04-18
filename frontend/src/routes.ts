@@ -6,6 +6,12 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
+  // TimberClaw Builder business UI (Ant Design) — PRD §6.1.1; routes outside OpenHands shell for factory IT (Owner).
+  route("tc", "timberclaw/routes/tc-root-layout.tsx", [
+    index("timberclaw/routes/tc-home.tsx"),
+    route("dashboards", "timberclaw/routes/tc-dashboards.tsx"),
+    route("master-data", "timberclaw/routes/tc-master-data.tsx"),
+  ]),
   route("login", "routes/login.tsx"),
   route("onboarding", "routes/onboarding-form.tsx"),
   route("information-request", "routes/information-request.tsx"),

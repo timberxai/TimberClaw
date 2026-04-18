@@ -22,3 +22,40 @@ services:
     pull_policy: build
     stdin_open: true
     tty: true
+
+  # TimberClaw Builder business API (Django) + PostgreSQL — PRD §6.1 / M0-01
+  postgres:
+    image: postgres:16-alpine
+    container_name: timberclaw-postgres-${DATE:-}
+    environment:
+      POSTGRES_USER: timberclaw
+      POSTGRES_PASSWORD: timberclaw
+      POSTGRES_DB: timberclaw
+    ports:
+      - "${TC_POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - tc_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timberclaw -d timberclaw"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  tc-backend:
+    build:
+      context: ./timberclaw/backend
+      dockerfile: Dockerfile
+    image: timberclaw-backend:latest
+    container_name: timberclaw-backend-${DATE:-}
+    environment:
+      DATABASE_URL: postgresql://timberclaw:timberclaw@postgres:5432/timberclaw
+      DJANGO_DEBUG: "1"
+      DJANGO_ALLOWED_HOSTS: "*"
+    ports:
+      - "${TC_BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  tc_pg_data:

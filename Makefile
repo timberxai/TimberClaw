@@ -136,7 +136,23 @@ check-poetry:
 		exit 1; \
 	fi
 
-install-python-dependencies:
+# Poetry 2.x expects the virtualenvs directory to exist before some commands run
+# (e.g. pre-commit under minimal/root-only images). This avoids missing envs.toml errors.
+ensure-poetry-virtualenvs-path:
+	@echo "$(YELLOW)Ensuring Poetry virtualenvs.path exists...$(RESET)"
+	@set -e; \
+	PV_PATH=$$(poetry config virtualenvs.path 2>/dev/null | tail -n1); \
+	if [ -z "$$PV_PATH" ] || [ "$$PV_PATH" = "null" ]; then \
+		if [ "$(shell uname)" = "Darwin" ]; then \
+			PV_PATH="$$HOME/Library/Caches/pypoetry/virtualenvs"; \
+		else \
+			PV_PATH="$$HOME/.cache/pypoetry/virtualenvs"; \
+		fi; \
+		poetry config virtualenvs.path "$$PV_PATH"; \
+	fi; \
+	mkdir -p "$$(poetry config virtualenvs.path | tail -n1)"
+
+install-python-dependencies: ensure-poetry-virtualenvs-path
 	@echo "$(GREEN)Installing Python dependencies...$(RESET)"
 	@if [ -z "${TZ}" ]; then \
 		echo "Defaulting TZ (timezone) to UTC"; \
@@ -182,7 +198,7 @@ install-frontend-dependencies: check-npm check-nodejs
 	@cd frontend && npm install
 	@echo "$(GREEN)Frontend dependencies installed successfully.$(RESET)"
 
-install-pre-commit-hooks: check-python check-poetry install-python-dependencies
+install-pre-commit-hooks: check-python check-poetry ensure-poetry-virtualenvs-path install-python-dependencies
 	@echo "$(YELLOW)Installing pre-commit hooks...$(RESET)"
 	@git config --unset-all core.hooksPath || true
 	@poetry run pre-commit install --config $(PRE_COMMIT_CONFIG_PATH)
@@ -367,5 +383,5 @@ help:
 	@echo "  $(GREEN)help$(RESET)                - Display this help message, providing information on available targets."
 
 # Phony targets
-.PHONY: build check-dependencies check-system check-python check-npm check-nodejs check-docker check-poetry install-python-dependencies install-frontend-dependencies install-pre-commit-hooks lint-backend lint-frontend lint test-frontend test build-frontend start-backend start-frontend _run_setup run run-wsl setup-config setup-config-prompts setup-config-basic openhands-cloud-run docker-dev docker-run clean help
+.PHONY: build check-dependencies check-system check-python check-npm check-nodejs check-docker check-poetry ensure-poetry-virtualenvs-path install-python-dependencies install-frontend-dependencies install-pre-commit-hooks lint-backend lint-frontend lint test-frontend test build-frontend start-backend start-frontend _run_setup run run-wsl setup-config setup-config-prompts setup-config-basic openhands-cloud-run docker-dev docker-run clean help
 .PHONY: kind
