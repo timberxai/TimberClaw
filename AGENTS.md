@@ -3,7 +3,7 @@
 > This repo is a **fork of OpenHands**, but the active project is **TimberClaw-code** — a Builder for generating
 > lightweight MES/BI systems for discrete-manufacturing factories. **Before doing anything, read these first:**
 >
-> 1. [`TIMBERCLAW.md`](TIMBERCLAW.md) — what this project is
+> 1. [`README.md`](README.md) — what this project is + navigation
 > 2. [`timberclaw/AGENTS.md`](timberclaw/AGENTS.md) — your (Coding Agent) hard constraints for TimberClaw work
 > 3. [`timberclaw/docs/PRD.md`](timberclaw/docs/PRD.md) — single source of truth for product requirements
 > 4. [`timberclaw/docs/CONVENTIONS.md`](timberclaw/docs/CONVENTIONS.md) — monorepo layout & upstream-sync rules
