@@ -13,7 +13,7 @@
 
 | 版本 | 主要变化 |
 |------|----------|
-| V1.6 | **新增 §16 Coding Agent 工作模式**：明确每张工单的 Pickup 信号 / Definition of Done / Evidence；锁定 `cursor` 为唯一集成分支与 PR base；明确「单 PR 单工单」与上限 Batch；规定 `EXECUTION_TODO.md` 是单一调度面、不得绕过；定义 Wave 切换闸门与 Agent 的「停止条件」 |
+| V1.6 | **新增 §15 Coding Agent 工作模式**：明确每张工单的 Pickup 信号 / Definition of Done / Evidence；锁定 `cursor` 为唯一集成分支与 PR base；明确「单 PR 单工单」与上限 Batch；规定 `EXECUTION_TODO.md` 是单一调度面、不得绕过；定义 Wave 切换闸门与 Agent 的「停止条件」 |
 | V1.5 | **场景对齐**：明确真实用户是不懂代码的工厂人员（排产员 / PMC / 车间 / 质检）；新增 §4.6 业务使用者角色；§4.1 Owner 收紧到工厂信息化负责人 / IT；新增 §5.8 概念隔离原则；§8.2 spec 双视图化（业务场景视图为主、结构化专业视图为副）；§8.3 把仪表盘 / BI 提升为一等公民；新增 §8.12 主数据导入与结果导出；§8.6 明确 Dev 失败"转人工" = Platform Engineer / Admin；新增 §6.4 工厂环境现实约束已知项；新增 §3.3 离散制造首期试点细化；§13 新增场景达成率 |
 | V1.4 | 确认 fork 基座为 **OpenHands**；前端由 Vue 3 + Element Plus 改为 **React 18 + TypeScript + Ant Design v5**（以最小化上游合并成本）；明确 Builder UI 采用"务实路线"（OpenHands 原有屏沿用，其上新增业务屏用 AntD） |
 | V1.3 | 冻结第一阶段技术栈（前端 Vue / Django / PostgreSQL / GitLab / Docker Compose）；补充 LLM 与 Agent 执行底座、认证与账号最小子集、Builder 自身部署、回滚与 Human Developer 回流、代码层面高风险判定、反馈风险判定；补充术语表与可度量成功标准 |
