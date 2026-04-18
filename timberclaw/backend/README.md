@@ -14,7 +14,24 @@ python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
 ```
 
-健康检查：`GET /api/health/`
+健康检查：`GET /api/health/`（含 `checks.database`：`SELECT 1`；失败时 HTTP **503**）
+
+## LLM Gateway（M0-03）
+
+- `GET /api/health/llm/` — 当前 `TC_LLM_PROVIDER` 与密钥是否就绪（默认 `mock` 无需密钥）
+- `POST /api/llm/invoke/` — JSON `{"messages":[{"role":"user","content":"..."}],"max_tokens":256}`（需登录 Session）；写入 `LLMCallLog`（Admin 可查看）
+- 环境变量：`TC_LLM_PROVIDER`（`mock` \| `openai` \| `dashscope`）、`TC_OPENAI_*`、`TC_DASHSCOPE_*`、`TC_LLM_MAX_OUTPUT_TOKENS`、`TC_LLM_TIMEOUT_SECONDS`
+
+## GitLab（M0-04，读路径）
+
+- `GET /api/health/gitlab/` — 调用 GitLab `GET /api/v4/version`；未配置 URL/Token 时返回 `skipped`
+- 可选：`TC_GITLAB_PROJECT_ID` — 额外 `GET /api/v4/projects/:id` 探测项目可读性
+- `TC_GITLAB_SSL_VERIFY=0` 仅用于内网自签证书调试
+
+### 写路径演练（阶段 B）
+
+- `POST /api/gitlab/smoke-write/` — 在已配置项目中创建临时分支、单文件提交、并打开 MR（`remove_source_branch=true`）
+- 需要 **Session 登录**且用户角色为 **Platform Engineer**；并设置 **`TC_GITLAB_ENABLE_WRITE=1`**（默认关闭，避免误触生产仓库）
 
 ## 认证（M0-02）
 
@@ -40,7 +57,7 @@ python manage.py seed_builder_demo_users
 ```bash
 # 在仓库根目录
 docker compose build tc-backend
-docker compose run --rm tc-backend pytest
+docker compose run --rm tc-backend python -m pytest
 ```
 
 ## Docker

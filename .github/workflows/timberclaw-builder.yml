@@ -1,0 +1,82 @@
+# TimberClaw Builder API + Wave A 自检（M0；合并目标常指向 `cursor`）
+name: TimberClaw Builder
+
+on:
+  push:
+    branches:
+      - main
+      - cursor
+    paths:
+      - "timberclaw/**"
+      - "docker-compose.yml"
+      - "scripts/tc_wave_a_check.sh"
+      - "scripts/tc_compose_health.sh"
+      - ".github/workflows/timberclaw-builder.yml"
+  pull_request:
+    paths:
+      - "timberclaw/**"
+      - "docker-compose.yml"
+      - "scripts/tc_wave_a_check.sh"
+      - "scripts/tc_compose_health.sh"
+      - ".github/workflows/timberclaw-builder.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tc-backend-pytest:
+    name: tc-backend (Docker pytest)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build and test
+        run: |
+          docker compose build tc-backend
+          docker compose run --rm tc-backend python -m pytest
+
+  tc-wave-a-check:
+    name: Wave A host check (compose + curl)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build image
+        run: docker compose build tc-backend
+      - name: Start postgres + tc-backend
+        run: docker compose up -d postgres tc-backend
+      - name: Wait for /api/health/
+        run: |
+          set -e
+          for i in $(seq 1 45); do
+            if curl -fsS "http://127.0.0.1:8000/api/health/" >/tmp/tc-health.json 2>/dev/null; then
+              python3 -c "import json; d=json.load(open('/tmp/tc-health.json')); assert d.get('status')=='ok' and d.get('checks',{}).get('database',{}).get('ok') is True"
+              echo "OK: health"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "timeout waiting for tc-backend"
+          docker compose logs tc-backend --tail 80 || true
+          exit 1
+      - name: scripts/tc_wave_a_check.sh
+        run: bash scripts/tc_wave_a_check.sh
+      - name: Stop compose
+        if: always()
+        run: docker compose down -v || true
+
+  timberclaw-frontend-eslint:
+    name: ESLint src/timberclaw
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
+      - name: ESLint TimberClaw subtree
+        working-directory: frontend
+        run: npx eslint "src/timberclaw" --ext .ts,.tsx

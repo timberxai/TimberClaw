@@ -40,7 +40,7 @@
 |----|------|
 | PRD | **V1.5**（对齐离散制造真实场景 + 概念隔离 + 仪表盘一等公民 + CSV 主数据 + 双视图） |
 | BACKLOG | **V1.2**（对齐 PRD V1.5，新增 5 张核心工单） |
-| 代码实现 | **M0-01 已收口**；**M0-02（认证）MVP 已落地**：`accounts`（五角色 `UserProfile`、Session 登录 API、`seed_builder_demo_users`、`docker compose run tc-backend python -m pytest`）；下一步 **W-A-02 / W-A-03**（LLM / GitLab 占位）→ **W-A-04**（M0-05 统一自检） |
+| 代码实现 | **M0-01~M0-04 已落地**：`accounts` + `llm` + `gitlab_integration`（读：`/api/health/gitlab`；写演练：`POST /api/gitlab/smoke-write/` + `TC_GITLAB_ENABLE_WRITE`）；**W-A-04 全量自检**（PG / pre-commit）进行中 |
 | Fork 起始 tag | 待 Platform Engineer 在 M0-01 启动时锁定并回写 PRD §2 |
 
 ---
@@ -80,7 +80,20 @@ docker compose exec tc-backend python manage.py seed_builder_demo_users
 docker compose run --rm tc-backend python -m pytest
 ```
 
-冒烟脚本（需 `tc-backend` 已启动）：
+Wave A 统一自检（**Postgres 宿主机端口** + **Django `/api/health/`**（经 `tc_compose_health.sh`，JSON 内 **`checks.database`** 为应用侧 `SELECT 1`）+ **LLM / GitLab**；需 `docker compose up` 后 Postgres 映射到 `127.0.0.1:${TC_POSTGRES_PORT:-5433}`、`tc-backend` 映射到 `8000`）：
+
+```bash
+bash scripts/tc_wave_a_check.sh
+```
+
+可选：在同一脚本内跑容器内 **pytest** 或本机 **pre-commit**（后者依赖 W-A-00 装好钩子）：
+
+```bash
+TC_WAVE_A_RUN_PYTEST=1 bash scripts/tc_wave_a_check.sh
+TC_WAVE_A_RUN_PRE_COMMIT=1 bash scripts/tc_wave_a_check.sh
+```
+
+仅 Django 根健康：
 
 ```bash
 bash scripts/tc_compose_health.sh

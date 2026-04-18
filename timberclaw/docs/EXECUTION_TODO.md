@@ -3,20 +3,54 @@
 > 目标：把"分阶段推进 + 实时状态更新 + 可并行拆分"落地为统一看板。
 >
 > 状态定义：`pending`（未开始）/ `in_progress`（进行中）/ `blocked`（阻塞）/ `done`（完成）
+>
+> **本文件是 Coding Agent 唯一调度面**（PRD §15.1）。Agent 按 §15.3 Pickup 协议挑工单；不得绕过本文件。
 
 ## 更新时间
-- 2026-04-19 (UTC)
+- 2026-04-20 (UTC)（PRD V1.6：新增 §15 Coding Agent 工作模式；本看板按 V1.6 模板字段化每张工单）
 
 ## 当前总览
-- 当前波次：**Wave A（M0 基础设施）**
-- 当前 Sprint：**Sprint-0（M0-01 已收口 + M0-02 认证落地中）**
+- 当前波次：**Wave A（M0 基础设施）** —— W-A-04 接近收口；Wave B–G（M1–M8）仍按 Wave 切换闸门（PRD §15.5）顺序推进。
+- 当前 Sprint：**Sprint-0（Wave A：M0-04 写演练 + M0-05 自检完成；合并目标分支 `cursor`）**
+- **执行边界**：本看板列出 Wave A–G 全路线图；**不可能在单次迭代内全部实现**。`.github/workflows/timberclaw-builder.yml` 提供 TimberClaw 相关改动的 **可重复 CI 验收**（不等价于「所有工单已完成」）。
 - 总计划：见 `timberclaw/docs/ROADMAP_EXECUTION_PLAN.md`
-- 基线 PRD：V1.5；基线 BACKLOG：V1.2
-- 下一里程碑出口：`docker compose up` 可拉起 Builder 基础能力（含 OpenHands 原屏 + `/tc/*` 占位 + PG）
+- 基线 PRD：**V1.6**；基线 BACKLOG：V1.2
+- 下一里程碑出口（Wave A 完整 DoD）：`docker compose up` 可拉起 OpenHands 原屏 + `/tc/*` 占位 + PG + LLM/GitLab 自检；Wave A CI 全绿
 
-## PRD V1.5 强约束（贯穿所有 Wave，不另开工单）
+---
 
-下列约束来自 PRD V1.5 + BACKLOG V1.2 顶部"既有工单需补充的新约束"，每个 Wave 验收前必须复核：
+## Coding Agent 续作协议（速查；正式定义见 PRD §15）
+
+1. **Pickup 顺序**：当前 Wave 内 `in_progress` 且未阻塞 → 当前 Wave 内 `pending` 且依赖全 `done` → 下一 Wave 中依赖全 `done` 的 `pending`；都没有就 **停止并报告**（PRD §15.6）。
+2. **认领**：把状态改成 `in_progress`，commit 带 `[tc-agent]`；同一时间一张工单只允许一个 Agent 在改。
+3. **执行边界**：只动工单 `Range` 列出的代码 / 文档面；越权请新开工单，**不**改写当前 Range。
+4. **收口**：满足 `DoD` 后状态改 `done`，把 `Evidence` 命令的输出粘到 PR 描述，PR base 必须是 `cursor`。
+5. **停止信号**：见 PRD §15.6（无可 Pickup / 依赖被破坏 / CI 连续失败 / PRD 与 TODO 冲突 / 范围不足 / 触碰高风险）。
+
+### 工单模板（新增工单时复制此块）
+
+```
+### W-?-??: <标题>
+- 状态：pending
+- 依赖：<工单 ID 列表，或 无>
+- 关联 BACKLOG：<M-编号>
+- 范围（Range）：
+  - <允许动到的目录 / 文件 / 模块>
+- Pickup 信号：
+  - <可机读的就绪条件>
+- DoD：
+  - <验收条目 1（命令 + 期望输出）>
+  - <验收条目 2>
+- Evidence（PR 必跑命令）：
+  - <命令 1>
+  - <命令 2>
+- 不做：
+  - <明示越权项>
+```
+
+## PRD V1.6 强约束（贯穿所有 Wave，不另开工单）
+
+下列约束来自 PRD V1.5 业务面 + V1.6 工作模式面 + BACKLOG V1.2 顶部"既有工单需补充的新约束"，每个 Wave 验收前必须复核：
 
 1. **概念隔离前置**（PRD §5.8）：从 Wave B 起，所有 Owner / Reviewer / 生成系统可见文案必须经过术语映射（详见 W-B-00）
 2. **Spec 业务场景视图为默认**（PRD §8.2）：M1-01 / M1-02 输出的初始 spec 必须默认呈现业务场景视图
@@ -24,6 +58,10 @@
 4. **`external_import` 实体生成约束**（PRD §8.12）：M2-05 不得为该类实体生成"新增 / 批量删除"按钮
 5. **Dev 失败不直接抛 Owner**（PRD §8.6）：M3-01 失败路径必须接入 M3-05 通知分派
 6. **数据治理前置**（PRD §10）：M7-01 / M7-03 / M7-04 与 Wave C/D 并行，而非堆到 Wave F
+7. **单 PR 单工单 + base=`cursor`**（PRD §15.2）：Coding Agent 不得把多张工单塞进同一 PR；PR base 必须是 `cursor`
+8. **工单字段齐全**（PRD §15.4）：每张工单必须含 `状态 / 依赖 / 关联 BACKLOG / Range / Pickup 信号 / DoD / Evidence / 不做`；缺字段视为未就绪，Agent 不得 Pickup
+9. **Wave 切换闸门**（PRD §15.5）：进入下一 Wave 前，当前 Wave 所有工单必须 `done` 或显式 `blocked`
+10. **Agent 停止条件**（PRD §15.6）：触发任一即停手报告，不得「凭直觉」继续
 
 ---
 
@@ -36,58 +74,108 @@
 - 自检脚本可输出 PG / GitLab / LLM 三项连通状态
 - **pre-commit hooks 链路本地可用**（W-A-00 解锁）
 
-### W-A-00: 修复 Poetry / pre-commit 环境（阻塞修复）
-- 状态：`pending`（Makefile 已增加 `ensure-poetry-virtualenvs-path`；待 Batch 3 在干净环境复验）
+### W-A-00: 修复 Poetry / pre-commit 环境（本机闸门）
+- 状态：`pending`
 - 依赖：无
 - 关联 BACKLOG：M0-01 前置
-- 范围：
-  - 修复 `make install-pre-commit-hooks` 失败：`No such file or directory: /root/.cache/pypoetry/virtualenvs/envs.toml`
-  - 重建 Poetry 虚拟环境目录与缓存
-  - 验证 pre-commit 钩子在本地 commit 前可触发 lint / typecheck
-- 验收：
-  - `make install-pre-commit-hooks` 成功退出
-  - 在测试 commit 中能看到 pre-commit 触发记录
-  - 写入 `M0-05 自检脚本`：自检列表包含 pre-commit 链路通过
+- 范围（Range）：
+  - 根 `Makefile`（`ensure-poetry-virtualenvs-path` / `install-pre-commit-hooks`）
+  - `dev_config/python/.pre-commit-config.yaml`（如必要，仅微调；改动登记 UPSTREAM_PATCHES）
+  - `timberclaw/docs/EXECUTION_TODO.md`、`scripts/tc_wave_a_check.sh`（开启默认 `TC_WAVE_A_RUN_PRE_COMMIT`）
+- Pickup 信号：
+  - 本机已安装 **Python 3.12 + Poetry 1.8+**
+  - 仓库根 `.github/workflows/lint.yml` 中的 `lint-python` 当前为绿（说明 hook 配置本身没坏）
+- DoD：
+  - 在 macOS / Linux 干净 shell 内执行 `make install-pre-commit-hooks` 退出码 0
+  - `git commit` 测试可观察到 pre-commit 触发（至少一条 hook 输出）
+  - `scripts/tc_wave_a_check.sh` 默认（不需 `TC_WAVE_A_RUN_PRE_COMMIT=1`）即包含 pre-commit 状态项 **或** README 显式说明在 W-A-00 完成前以 `TC_WAVE_A_RUN_PRE_COMMIT=1` 触发
+- Evidence（PR 必跑）：
+  - `python3.12 --version && poetry --version`
+  - `make install-pre-commit-hooks`
+  - `pre-commit run --all-files --config dev_config/python/.pre-commit-config.yaml`
+- 不做：
+  - 改动 OpenHands 原 `.pre-commit-config.yaml` 的 hook 集合（非必要不动）
+  - 把 pre-commit 安装作为 `tc-backend` Docker 镜像的运行时依赖
 
 ### W-A-01: M0-01 Builder 项目脚手架
-- 状态：`done`（Batch 1–3 已完成；compose 全链路已由 Owner 确认）
-- 依赖：W-A-00（pre-commit 缺失不影响代码落地，但影响 commit 前校验，建议并行修复）
+- 状态：`done`
+- 依赖：无（W-A-00 仅影响 commit 前校验，不阻塞代码落地）
 - 关联 BACKLOG：M0-01
-- 范围摘要：
-  - 在 OpenHands fork 基础上叠加 TimberClaw 业务模块骨架
-  - 打通 `/tc/*` 路由占位与基础布局入口
-  - 扩展 compose 以纳入 Django + PostgreSQL（按最小侵入策略）
-  - **预留**：在前端 `frontend/src/timberclaw/` 中预留 `dashboards/`、`master-data/` 目录（为 M2-07 / M2-08）
-- 本次执行批次（Batch）
-  - Batch 1：计划与任务切分（done）
-  - Batch 2：仓库与目录落位初始化（done：`/tc/*` + Django + compose 骨架）
-  - Batch 3：运行与连通性自检（done）
+- 范围（Range）：
+  - `timberclaw/backend/`（Django 项目骨架）
+  - `frontend/src/timberclaw/`（`/tc/*` 占位 + `dashboards/` / `master-data/` 预留目录）
+  - 根 `docker-compose.yml`（新增 `postgres` + `tc-backend`）
+- Pickup 信号：N/A（已 done）
+- DoD（已满足）：
+  - `docker compose up` 后可访问 OpenHands 原屏与 `http://127.0.0.1:3000/tc`
+  - `tc-backend` 健康端点 `GET /api/health/` 返回 200
+- Evidence：
+  - `docker compose up --build`
+  - `curl -fsS http://127.0.0.1:8000/api/health/`
 
 ### W-A-02: M0-03 LLM Gateway 抽象
-- 状态：`pending`
-- 依赖：W-A-01 完整完成（不只是 Batch 2）
-- 并行策略：M0-01 done 后与 W-A-03、W-A-05 三路并行
-- 范围：抽象统一 LLM 出口；至少支持 OpenAI + 一家国内厂商；Token / 成功率 / 失败原因监控；单任务上限；出站脱敏
+- 状态：`done`
+- 依赖：W-A-01
+- 关联 BACKLOG：M0-03
+- 范围（Range）：`timberclaw/backend/llm/`、`tc_project/{settings,urls}.py` 中 LLM 配置段
+- Pickup 信号：N/A（已 done）
+- DoD（已满足）：
+  - `GET /api/health/llm/` 返回 `provider` 与密钥就绪状态
+  - `POST /api/llm/invoke/`（Session 登录后）能跑通 mock，写入 `LLMCallLog`
+- Evidence：
+  - `docker compose run --rm tc-backend python -m pytest timberclaw/backend/tests/test_llm_gateway.py timberclaw/backend/tests/test_redact.py`
+  - `curl -fsS http://127.0.0.1:8000/api/health/llm/`
+- 后续接驳：Wave G 指标看板将读取 `LLMCallLog` 聚合（W-G-00 已登记）
 
 ### W-A-03: M0-04 GitLab 接入
-- 状态：`pending`
+- 状态：`done`
 - 依赖：W-A-01
-- 并行策略：M0-01 done 后与 W-A-02、W-A-05 并行
-- 范围：Project Access Token 配置；连通性自检；机器账号身份分支 / commit / MR
+- 关联 BACKLOG：M0-04
+- 范围（Range）：`timberclaw/backend/gitlab_integration/`、`tc_project/urls.py` 中 GitLab 路由 / 设置
+- Pickup 信号：N/A（已 done）
+- DoD（已满足）：
+  - `GET /api/health/gitlab/` 在未配置时 `status=skipped`，配置后 `status=ok` 并返回 GitLab 版本
+  - `POST /api/gitlab/smoke-write/` 在 `TC_GITLAB_ENABLE_WRITE=1` + Platform Engineer 角色下能创建分支 / 单文件提交 / 打 MR
+- Evidence：
+  - `docker compose run --rm tc-backend python -m pytest timberclaw/backend/tests/test_gitlab_integration.py`
+  - 真实 GitLab 演练（可选）：登录 `tc_platform_engineer`，`curl -X POST http://127.0.0.1:8000/api/gitlab/smoke-write/`
 
 ### W-A-04: M0-05 Builder 部署与自检
-- 状态：`pending`
-- 依赖：W-A-00、W-A-01、W-A-02、W-A-03
-- 并行策略：Wave A 收口工单，必须串行最后做
-- 范围：`docker-compose.yml` + README；自检脚本（PG / GitLab / LLM / pre-commit 全链路）
+- 状态：`in_progress`
+- 依赖：W-A-01 / W-A-02 / W-A-03（均 `done`）；W-A-00 仅影响默认是否跑 pre-commit
+- 关联 BACKLOG：M0-05
+- 范围（Range）：
+  - `scripts/tc_wave_a_check.sh`、`scripts/tc_compose_health.sh`
+  - `docker-compose.yml` 环境变量段
+  - `timberclaw/README.md` 与 `timberclaw/backend/README.md`「30 min deploy」段落
+  - `.github/workflows/timberclaw-builder.yml`（已建立，可微调）
+- Pickup 信号：
+  - `tc_wave_a_check.sh` 已含 PG TCP + API 三件套 + 可选 pytest/pre-commit
+  - `.github/workflows/timberclaw-builder.yml` 已合入并在 `cursor` 触发
+- DoD：
+  - `bash scripts/tc_wave_a_check.sh` 在已 `docker compose up postgres tc-backend` 后退出码 0，输出包含 `OK: postgres` / `OK: tc-backend health` / `status=skipped|ok`（GitLab）
+  - `timberclaw-builder.yml` 三个 job 全绿（在 PR → `cursor` 上）
+  - `timberclaw/README.md` 含 **「30 分钟部署」** 步骤清单（compose up → seed users → wave-a check → 可选 pytest）
+  - W-A-00 完成时，将 `TC_WAVE_A_RUN_PRE_COMMIT=1` 提升为脚本默认或在 README 中标为「必跑」
+- Evidence：
+  - `docker compose up -d postgres tc-backend && bash scripts/tc_wave_a_check.sh`
+  - `docker compose run --rm tc-backend python -m pytest`
+- 不做：
+  - 在脚本中加入对生成系统（输出物）的探测（属于 Wave C 之后）
 
 ### W-A-05: M0-02 认证与账号
-- 状态：`done`（MVP：`UserProfile` 五角色 + Session/DRF 登录 + 示例门禁 + `seed_builder_demo_users` + `pytest`）
+- 状态：`done`
 - 依赖：W-A-01
-- 并行策略：与 W-A-02 / W-A-03 并行（本工单已可在 `tc-backend` 独立验收）
-- 范围：Django 内置 auth + 五类角色（Owner / Reviewer / Admin / PE / Human Developer）+ 角色 × 动作权限
-- 注意：业务使用者（End User，PRD §4.6）不在 Builder 账号体系内，仅在生成系统的运行时存在
-- 验收命令（需 Docker）：`docker compose run --rm tc-backend python -m pytest`
+- 关联 BACKLOG：M0-02
+- 范围（Range）：`timberclaw/backend/accounts/`、`tc_project/{settings,urls}.py` 中 auth/DRF 段
+- Pickup 信号：N/A（已 done）
+- DoD（已满足）：
+  - 五角色 `UserProfile`（Owner / Reviewer / Admin / PE / Human Developer）落地
+  - `POST /api/auth/login/` Session 登录 + `GET /api/me/` 返回角色
+  - `manage.py seed_builder_demo_users` 一键种子
+- Evidence：
+  - `docker compose run --rm tc-backend python -m pytest timberclaw/backend/tests/test_accounts.py`
+- 注意：业务使用者（End User，PRD §4.6）**不**在 Builder 账号体系内，仅在生成系统运行时存在
 
 ---
 
@@ -101,30 +189,51 @@
 
 ### W-B-00: 概念隔离最小子集前置（V1.5 关键修订）
 - 状态：`pending`
-- 依赖：W-A-01
-- 并行策略：与 W-B-01 同步启动；属于 M4-06 的早交付子集
+- 依赖：W-A-01（M0-01 脚手架）；W-A-04 收口建议先于本工单
 - 关联 BACKLOG：M4-06 最小子集（提前到 Wave B）
-- 范围：
-  - 全局术语映射层骨架（i18n 式键值表 + 角色上下文）
-  - 覆盖 PRD §7.4 表的全部映射项（commit / PR / rc / Preview / Prod / migration / diff / 回滚）
-  - 提供 ESLint / 文本扫描规则：检测 Owner / Reviewer / 生成系统目录中是否出现敏感词（`commit`、`rc-`、`PR `、`merge request`、`migration`、`diff` 等原文）
-  - 接入 Dev 验证（M3-01 落地时只需挂上去即可）
-- **不做**（留给 W-E-01 内的完整 M4-06）：
-  - 候选版本相关的全部业务文案
+- 范围（Range）：
+  - `frontend/src/timberclaw/i18n/`（新建：术语键值表 + 角色上下文 hook）
+  - `frontend/src/timberclaw/`（业务屏改用 i18n 键，不再写硬编码工程词）
+  - `frontend/.eslintrc`（新增局部规则）或新建 `frontend/eslint-plugin-timberclaw/`
+  - `timberclaw/docs/CONVENTIONS.md` §术语映射小节（如必要）
+- Pickup 信号：
+  - W-A-04 已 `done`（CI 全绿）
+  - PRD §7.4 表存在并稳定（已就绪）
+- DoD：
+  - i18n 键覆盖 PRD §7.4 全部映射项（`commit` / `PR` / `rc` / `Preview` / `Prod` / `migration` / `diff` / `回滚`）
+  - ESLint 规则在 `frontend/src/timberclaw/**` 命中以下原文即报错：`commit`、`rc-`、`PR `、`merge request`、`migration`、`diff`
+  - `frontend/src/timberclaw` 现有屏 0 报错通过新规则；CI `timberclaw-frontend-eslint` job 仍绿
+  - PR 描述含术语映射截图或文本对照表
+- Evidence：
+  - `cd frontend && npx eslint src/timberclaw --ext .ts,.tsx`
+  - `cd frontend && npm run typecheck`
+  - 一段刻意违规代码（在 PR 草稿 commit 中验证规则可拦截，最终 commit 删除）
+- 不做（留给 W-E-02 完整 M4-06）：
+  - 候选版本 / Preview / 发布 / 反馈 全量文案
   - Reviewer 严格映射（依赖 M4-03 Preview 落地）
-- 验收：
-  - 任一 Owner 业务屏（M1 范围内）打开后无原始工程英文词
-  - ESLint 规则 CI 触发后能拦截违规提交
+  - 生成系统侧错误模板统一映射
 
 ### W-B-01: M1-01 ~ M1-03（需求输入 + 初始 spec + 对话修订）
 - 状态：`pending`
-- 依赖：W-A-04（Wave A 收口）、W-A-05（认证）
+- 依赖：W-A-04（Wave A 收口）、W-A-05（认证）、W-B-00（术语映射，否则 UI 文案违规）
 - 关联 BACKLOG：M1-01 / M1-02 / M1-03
-- 范围摘要：
-  - M1-01 需求输入中心（上传 / 文本 / 对话 / 模板四种入口）
-  - M1-02 Spec Analyst 生成初始 spec，**默认业务场景视图**（PRD V1.5 强约束 #2）
-  - M1-03 自然语言对话修订 spec + 版本与 diff
-- 子任务粒度：建议拆为 M1-01 / M1-02 / M1-03 三个独立条目（M1-02 依赖 M1-01；M1-03 依赖 M1-02）
+- 范围（Range）：
+  - **后端**：`timberclaw/backend/specs/`（新增 Django app：`SpecDocument` / `SpecVersion` 模型 + DRF 路由）
+  - **后端**：复用 `llm.gateway.invoke()` 做 Spec Analyst 调用
+  - **前端**：`frontend/src/timberclaw/specs/`（需求输入中心 + 初始 spec 业务场景视图 + 对话修订）
+- Pickup 信号：
+  - W-A-04 `done`、W-A-05 `done`、W-B-00 `done`
+  - `POST /api/llm/invoke/` 在 mock provider 下可用
+- DoD（建议拆 3 个 PR，每 PR 一个 Mn）：
+  - **M1-01**：四种入口（上传 / 文本 / 对话 / 模板）任一可创建 `SpecDocument` 草稿；`pytest` 覆盖创建路径
+  - **M1-02**：Spec Analyst 调 LLM 产出**业务场景视图**（角色 / 触发 / 主路径 / 异常 / 指标）；默认视图必须是业务场景视图（PRD V1.5 强约束 #2）
+  - **M1-03**：对话改写 → 新 `SpecVersion`；可看 diff（业务摘要 + 结构差异，diff 摘要可在 M1-06 完善）
+- Evidence：
+  - `docker compose run --rm tc-backend python -m pytest timberclaw/backend/tests/test_specs.py`（新建测试）
+  - `cd frontend && npx eslint src/timberclaw/specs --ext .ts,.tsx && npm run typecheck`
+- 不做：
+  - 结构化专业视图编辑器（M1-04，归 W-B-02）
+  - Spec 显式确认闸门（M1-05，归 W-B-03）
 
 ### W-B-02: M1-04 + M1-06（结构化编辑 + 双视图）
 - 状态：`pending`
@@ -329,64 +438,59 @@
 
 ---
 
-## 并行智能体编排
+## 并行智能体编排（每个角色的「当前 Pickup 候选」）
 
-> M0-01 已收口；当前主线并行 **W-A-02（LLM）** 与 **W-A-03（GitLab）**，W-A-04（M0-05 自检）待二者有占位接口后再收口。
+> Agent 必须按 PRD §15.3 的优先级挑工单；下面只是按「领域」给出建议候选，**实际状态以工单段为准**。
 
 ### Agent-Backend
-- 负责：`timberclaw/backend/` Builder API、认证、后续 LLM/GitLab 适配层
-- 当前状态：`pending`（下一优先：W-A-02 LLM Gateway 占位模块）
-- 已完成：M0-01 骨架 + M0-02 `accounts`（Session 登录 / 角色 / seed / pytest）
+- 负责：`timberclaw/backend/`（Django Builder API、authn/authz、LLM/GitLab 适配层、specs 模型）
+- 当前 Pickup 候选：W-B-01（依赖 W-A-04 / W-A-05 / W-B-00）
+- 已完成：W-A-01 / W-A-02 / W-A-03 / W-A-05
 
 ### Agent-Frontend
-- 负责：`frontend/src/timberclaw/` 业务屏（Ant Design）
-- 当前状态：`pending`（下一优先：对接 `/api/me` 展示当前登录角色；术语映射 W-B-00）
-- 已完成：M0-01 `/tc/*` 占位与预留目录
+- 负责：`frontend/src/timberclaw/` 业务屏（Ant Design v5）+ i18n 术语映射
+- 当前 Pickup 候选：**W-B-00**（依赖 W-A-04）
+- 已完成：W-A-01 `/tc/*` 占位与预留目录
 
 ### Agent-Infra
-- 负责：compose、健康检查脚本、环境变量约定
-- 当前状态：`pending`（下一优先：扩展 `scripts/tc_compose_health.sh` 覆盖 LLM/GitLab 占位 URL）
-- 已完成：M0-01 `postgres` + `tc-backend` + `tc_compose_health.sh`
+- 负责：根 `docker-compose.yml`、`scripts/`、CI workflow、环境变量约定
+- 当前 Pickup 候选：**W-A-04 收口**（README「30 min deploy」段；W-A-00 完成后默认开 pre-commit）
+- 已完成：`postgres` + `tc-backend` + `tc_compose_health.sh` + `tc_wave_a_check.sh` + `.github/workflows/timberclaw-builder.yml`
 
 ### Agent-QA
 - 负责：验收清单、命令验证、阻塞与风险归档
-- 当前状态：`in_progress`
-- 说明：维护执行看板；跟进 W-A-00 pre-commit 复验与 Wave A 收口证据链
+- 当前 Pickup 候选：在每张被推进的工单 PR 中执行 `Evidence` 命令并粘贴输出；对 `EXECUTION_TODO.md` 字段缺失的工单提「字段补齐」小 PR
+- 已完成：将 W-A-* 已交付工单字段化（按 PRD §15.4）
 
 ---
 
 ## 风险与阻塞
 
-1. **W-A-00 阻塞**：`make install-pre-commit-hooks` 失败（`No such file or directory: /root/.cache/pypoetry/virtualenvs/envs.toml`）
-   - 影响：pre-commit 链路不可用 → 本地 commit 前无法触发 lint / typecheck → 与 Wave A DoD 中"自检脚本"承诺有缺口
-   - 当前状态：已在 Makefile 增加 `ensure-poetry-virtualenvs-path`（创建并固定 `virtualenvs.path`）；待本机 / CI 复验后可将 W-A-00 标为 `done`
-   - 修复策略：重建 Poetry 虚拟环境目录与缓存；纳入 M0-05 自检列表
-   - 临时降级：M0-01 Batch 2 / Batch 3 期间，本地以"能跑的都跑"补偿（手工 lint / typecheck），不接受跳过 CI
-
-2. ~~**Batch 3 环境**~~：已由 Owner 在本地 Docker 确认；CI 侧待 M0-05 接入统一自检
-
-3. **依赖图风险**：M7-01 / M7-03 / M7-04 已前移到 W-C-Aux；若 Wave C 漏做，Wave F 的 M6-01 无法启动（M6-01 强依赖 M7-04 操作日志）
-
-4. **Wave A 尚未整体 done**：M0-01 / M0-02 已交付，但 M0-03 / M0-04 / M0-05 仍阻塞「全栈 Wave A DoD」；M1~M8 仍不得越级
+1. **W-A-00**（pre-commit 本机闸门）：仓库级 lint 已由 `.github/workflows/lint.yml` 的 `lint-python`（pip 安装方式）覆盖，PR 仍受拦截；本机 `make install-pre-commit-hooks` 仍待 Python 3.12 + Poetry 环境复验后标 `done`。**不阻塞 Wave A 收口的 CI 验证，但阻塞「30 min deploy」叙事完整性**。
+2. **依赖图风险**：M7-01 / M7-03 / M7-04 已前移到 W-C-Aux；若 Wave C 漏做，Wave F 的 M6-01 无法启动（M6-01 强依赖 M7-04 操作日志）。
+3. **Wave A 收尾**：M0-01 ~ M0-04 已交付；**M0-05** 自检脚本 + CI 已落，仍差 README「30 min deploy」清单与（W-A-00 解锁后）默认 pre-commit。M1~M8 仍不得越级（PRD §15.5）。
+4. **Vitest 全仓现状**：`npx vitest run` 在仓库层有上百例既有失败（OpenHands 上游测试 / 环境问题），**与 TimberClaw 后端无关**；TimberClaw 前端工单的 Evidence 仅要求对应子树的 vitest（如有），不要求全仓 vitest 通过。
 
 ---
 
-## 下一步（Next Action）
+## 下一步（Next Action，按 PRD §15.3 顺序）
 
-1. **分支策略**：TimberClaw 日常开发与 PR **默认目标分支为 `cursor`**（见 `docs/CONVENTIONS.md` §4.0）。历史 PR #5 / #6 内容已并入 `cursor`；后续工单请从 `cursor` 开分支并 PR 回 `cursor`。
-2. **并行启动 W-A-02 / W-A-03**：在 `tc-backend` 增加 `GET /api/health/llm` 与 `GET /api/health/gitlab` 配置探测（占位即可，不接真实密钥）。
-3. **W-A-04（M0-05）准备**：把 `docker compose run tc-backend python -m pytest` 与 `scripts/tc_compose_health.sh` 纳入统一 `scripts/tc_wave_a_check.sh`（草案）。
-4. **W-A-00**：在开发者机器执行 `make install-pre-commit-hooks` 复验通过后标 `done`。
-5. **Wave B 起跑**：把 W-B-00（术语映射 ESLint 最小子集）与 W-B-01 需求输入排进下一 Sprint。
+1. **W-A-04 收口**：在 `timberclaw/README.md` 增 **「30 分钟部署」** 步骤清单；当前 PR (`tc/m0-wave-a/llm-gitlab-gateway`) 合入 `cursor`。
+2. **W-A-00**：在装有 Python 3.12 + Poetry 的环境跑 `make install-pre-commit-hooks` → 标 `done` → 把 `TC_WAVE_A_RUN_PRE_COMMIT=1` 在 `tc_wave_a_check.sh` 里改为默认（或 README 标「必跑」）。
+3. **Wave A → Wave B 切换闸门**（PRD §15.5）：上述两项都 `done` 后才允许开 Wave B 工单。
+4. **Wave B 起跑**：先 **W-B-00**（术语 i18n + ESLint 拦截），再 **W-B-01**（需求输入 + 初始 spec + 对话修订）。
+5. **PR 合并节奏**：保持 **单 PR 单工单**（PRD §15.2）；超过 5 批次的工单必须拆。
 
 ---
 
-## 更新规则
+## 更新规则（V1.6）
 
-每次任务反馈时，必须更新以下字段：
+每次工单状态变更或 PR 合并后，**必须**更新以下字段，且对每张工单**保持 PRD §15.4 规定的字段齐全**：
 
-1. 任务状态（pending / in_progress / blocked / done）
-2. 当前批次（Batch）与完成结果
-3. 风险与阻塞（新增 / 解除）
-4. 下一步（Next Action）
-5. **PRD V1.5 强约束区**：若新发现的强约束，需追加并标注影响的 Wave
+1. 工单状态（`pending` / `in_progress` / `blocked` / `done`）
+2. 当前批次（Batch）与 commit / PR 链接
+3. 「风险与阻塞」（新增 / 解除）
+4. 「下一步（Next Action）」按 §15.3 重新排序
+5. **PRD V1.6 强约束区**：若新发现强约束，追加并标注影响的 Wave
+
+> **缺字段视为工单未就绪**（PRD §15.4），Coding Agent 不得 Pickup；遇此情况由 Agent 提交「字段补齐」小 PR，再 Pickup。

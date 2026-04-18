@@ -15,3 +15,17 @@ class IsOwnerOrAdmin(permissions.BasePermission):
         if profile is None:
             return False
         return profile.role in (BuilderRole.OWNER, BuilderRole.ADMIN)
+
+
+class IsPlatformEngineer(permissions.BasePermission):
+    """GitLab / 运行时等工程演练接口：仅 Platform Engineer。"""
+
+    message = "需要 Platform Engineer 角色。"
+
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        profile = getattr(request.user, "builder_profile", None)
+        if profile is None:
+            return False
+        return profile.role == BuilderRole.PLATFORM_ENGINEER

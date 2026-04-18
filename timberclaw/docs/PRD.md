@@ -3,7 +3,7 @@
 ## 1. 文档控制
 
 - **项目名称**：TimberClaw-code
-- **文档版本**：V1.5
+- **文档版本**：V1.6
 - **文档状态**：统一 PRD / 供 Coding Agent 实施
 - **文档目标**：作为 TimberClaw-code 的单一真相源，约束产品范围、角色权限、主流程、默认实现、数据治理与最小化边界。
 
@@ -13,6 +13,7 @@
 
 | 版本 | 主要变化 |
 |------|----------|
+| V1.6 | **新增 §16 Coding Agent 工作模式**：明确每张工单的 Pickup 信号 / Definition of Done / Evidence；锁定 `cursor` 为唯一集成分支与 PR base；明确「单 PR 单工单」与上限 Batch；规定 `EXECUTION_TODO.md` 是单一调度面、不得绕过；定义 Wave 切换闸门与 Agent 的「停止条件」 |
 | V1.5 | **场景对齐**：明确真实用户是不懂代码的工厂人员（排产员 / PMC / 车间 / 质检）；新增 §4.6 业务使用者角色；§4.1 Owner 收紧到工厂信息化负责人 / IT；新增 §5.8 概念隔离原则；§8.2 spec 双视图化（业务场景视图为主、结构化专业视图为副）；§8.3 把仪表盘 / BI 提升为一等公民；新增 §8.12 主数据导入与结果导出；§8.6 明确 Dev 失败"转人工" = Platform Engineer / Admin；新增 §6.4 工厂环境现实约束已知项；新增 §3.3 离散制造首期试点细化；§13 新增场景达成率 |
 | V1.4 | 确认 fork 基座为 **OpenHands**；前端由 Vue 3 + Element Plus 改为 **React 18 + TypeScript + Ant Design v5**（以最小化上游合并成本）；明确 Builder UI 采用"务实路线"（OpenHands 原有屏沿用，其上新增业务屏用 AntD） |
 | V1.3 | 冻结第一阶段技术栈（前端 Vue / Django / PostgreSQL / GitLab / Docker Compose）；补充 LLM 与 Agent 执行底座、认证与账号最小子集、Builder 自身部署、回滚与 Human Developer 回流、代码层面高风险判定、反馈风险判定；补充术语表与可度量成功标准 |
@@ -1136,6 +1137,81 @@ MVP 中：
 
 ---
 
-## 15. 一句话定义
+## 15. Coding Agent 工作模式（V1.6 新增）
+
+> 目的：让 Coding Agent 在没有人类逐步指令的情况下，也能从 `EXECUTION_TODO.md` 自主续作；同时对 Agent 设定明确的「停止条件」，避免在 PRD 边界外越权交付。
+
+### 15.1 单一调度面（Single Source of Truth）
+
+- **`timberclaw/docs/EXECUTION_TODO.md` 是当下唯一的调度面**。任何 Coding Agent 都必须从此文件挑选工单；不得依赖记忆 / 历史会话 / PR 评论作为下一步来源。
+- **PRD（本文）是范围与约束的真相源**。当 EXECUTION_TODO 与 PRD 冲突时，以 PRD 为准；并由 Agent 在 PR 中提出对 EXECUTION_TODO 的更正。
+- BACKLOG（`BACKLOG.md`）是工单语义来源；`ROADMAP_EXECUTION_PLAN.md` 是 Wave / 依赖图。三者由 EXECUTION_TODO 引用，不在 Agent 间「翻译」。
+
+### 15.2 分支与 PR 协议
+
+- **集成分支**：`cursor`。所有功能 PR 的 base 必须是 `cursor`，禁止直推 `main` / `cursor`。
+- **工单分支命名**：`tc/<wave-id>/<short-desc>`（例：`tc/m0-wave-a/llm-gitlab-gateway`）。
+- **单 PR 单工单**：每个 PR 对应 EXECUTION_TODO 上一张工单（W-x-NN）。如多张工单共享前置（如 Wave A 健康自检），允许串成 1 个收口 PR，但 PR 描述里必须列出覆盖的工单 ID。
+- **批次（Batch）**：每张工单内允许多次 commit/批次；上限 5 批次。超限须拆分新工单。
+- **PR 描述模板**：`Summary` / `Changes` / `Verification`（贴出本工单的 **Evidence** 命令与输出摘要） / `Merge target: cursor` / `Closes: <工单 ID>`。
+
+### 15.3 工单状态机与 Pickup 协议
+
+每张工单有四态：`pending` / `in_progress` / `blocked` / `done`。Coding Agent 续作流程：
+
+1. **Pickup**：在 `EXECUTION_TODO.md` 内按下列优先级挑选下一张工单：
+   1) 当前 Wave 中 `in_progress` 且未阻塞的工单
+   2) 当前 Wave 中 `pending` 且依赖全部 `done` 的工单
+   3) 若当前 Wave 全部 `done` 或仅剩 `blocked`，选择下一 Wave 中 `pending` 且依赖全部 `done` 的最早工单
+   4) 若 1)~3) 都不满足，**停止**并报告（详见 §16.6）
+2. **认领**：将该工单状态改为 `in_progress`，并在 commit 中以 `[tc-agent]` 标记；同一时间一张工单只能由一个 Agent 在改动。
+3. **执行**：按工单的 **Range / DoD / Evidence** 推进；不得超出工单 Range；新发现需求**只追加新工单**，不得改写当前工单 Range。
+4. **收口**：满足 DoD 后，将状态改为 `done`，把 Evidence 写入 PR 描述并合入 `cursor`。
+
+### 15.4 每张工单的强制字段（EXECUTION_TODO 模板）
+
+EXECUTION_TODO 中每张工单**必须**包含以下字段（缺字段视为工单未就绪，Agent 不得 Pickup）：
+
+- **状态**：`pending` / `in_progress` / `blocked` / `done`
+- **依赖**：上游工单 ID 列表（或 `无`）
+- **关联 BACKLOG**：M-编号
+- **范围（Range）**：本工单允许动到的代码 / 文档面（白名单）
+- **Pickup 信号**：可机读的就绪条件（例如「`cursor` 上 W-A-04 = done」「`/api/health/llm/` 返回 `provider=mock`」）
+- **DoD（Definition of Done）**：客观、可验收的条目（命令 + 期望输出 / UI 行为 / 文件存在 / CI 通过）
+- **Evidence（必跑命令）**：Agent 在 PR 描述中必须粘贴的命令与摘要输出
+- **不做**：明示越权项（防止把下一波次工作偷偷塞进来）
+
+### 15.5 Wave 切换闸门
+
+- 进入下一 Wave 前，**当前 Wave 的所有 W-x-NN 工单必须 `done` 或被显式 `blocked` 并登记原因**。
+- Wave 切换需满足该 Wave 的 **DoD**（详见 EXECUTION_TODO 各 Wave 头部「Wave X DoD」）。
+- 任何 Agent 不得跨 Wave 越级实现（例：Wave A 未收口前不准开 Wave B 工单）。
+
+### 15.6 Agent 的停止条件（必须遵守）
+
+Coding Agent 在以下情况**必须停止并向人类报告**：
+
+1. EXECUTION_TODO 上没有可 Pickup 的工单（按 §16.3 规则）
+2. 工单依赖被破坏（上游工单状态从 `done` 变 `blocked`）
+3. PR CI（`.github/workflows/timberclaw-builder.yml` 等）连续失败 ≥ 2 次且原因不在工单 Range
+4. 发现 PRD 与 EXECUTION_TODO 冲突
+5. 工单 Range 不足以达成 DoD（必须先开新工单扩范围，而非偷扩范围）
+6. 涉及 Prod 写入 / 高风险 migration / 删除上游目录 / 修改安全相关默认（凭据、CSRF、CORS）—— 一律停止并报告
+
+### 15.7 默认 CI / 验证最小套件
+
+每张 TimberClaw 后端 / 自检相关工单的 Evidence 至少包含：
+
+- `docker compose build tc-backend && docker compose run --rm tc-backend python -m pytest`
+- `bash scripts/tc_wave_a_check.sh`（要求 `docker compose up -d postgres tc-backend` 已就绪）
+
+每张 TimberClaw 前端工单的 Evidence 至少包含：
+
+- `cd frontend && npx eslint src/timberclaw --ext .ts,.tsx`
+- 对应的 `vitest` / 截图（视工单而定，不强制全仓 vitest 通过）
+
+---
+
+## 16. 一句话定义
 
 TimberClaw-code 是一个基于 **OpenHands** fork 改造的工业业务系统 Builder：它让工厂 IT（Owner）从业务场景出发，通过自然语言与 Agent 先生成并确认**spec 的业务场景视图**，再在 Dev 中基于 **React + Ant Design + Django + PostgreSQL** 的固定模板底座自动生成带有**仪表盘一等公民能力**和 **CSV 主数据导入 / 结果导出**的系统，在 Preview 中由业务代表（Reviewer）体验反馈，在人工把关下把最简可用、工业风格、不把工程概念暴露给业务使用者的系统发布到 Prod，最终由不懂代码的车间 / 排产 / 质检人员日常使用。

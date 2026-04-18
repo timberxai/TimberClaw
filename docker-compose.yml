@@ -51,6 +51,15 @@ services:
       DATABASE_URL: postgresql://timberclaw:timberclaw@postgres:5432/timberclaw
       DJANGO_DEBUG: "1"
       DJANGO_ALLOWED_HOSTS: "*"
+      TC_LLM_PROVIDER: ${TC_LLM_PROVIDER:-mock}
+      TC_OPENAI_API_KEY: ${TC_OPENAI_API_KEY:-}
+      TC_OPENAI_BASE_URL: ${TC_OPENAI_BASE_URL:-https://api.openai.com/v1}
+      TC_DASHSCOPE_API_KEY: ${TC_DASHSCOPE_API_KEY:-}
+      TC_GITLAB_URL: ${TC_GITLAB_URL:-}
+      TC_GITLAB_TOKEN: ${TC_GITLAB_TOKEN:-}
+      TC_GITLAB_PROJECT_ID: ${TC_GITLAB_PROJECT_ID:-}
+      TC_GITLAB_SSL_VERIFY: ${TC_GITLAB_SSL_VERIFY:-1}
+      TC_GITLAB_ENABLE_WRITE: ${TC_GITLAB_ENABLE_WRITE:-0}
     ports:
       - "${TC_BACKEND_PORT:-8000}:8000"
     depends_on:
