@@ -81,13 +81,13 @@ make build
 make run FRONTEND_PORT=12000 FRONTEND_HOST=0.0.0.0 BACKEND_HOST=0.0.0.0
 ```
 
-M0 完成后，TimberClaw 全栈启动将是一条命令：
+M0 收口后，TimberClaw 全栈启动仍是一条命令：
 
 ```bash
-docker compose up
+docker compose up --build
 ```
 
-届时本节会被回写，具体步骤以 M0-05 的产出为准。
+**进展**：`postgres` + `tc-backend`（Django）与 `/tc` 前端占位已并入 compose；OpenHands 主流程与完整自检（M0-05）仍在推进。细节见 [`timberclaw/README.md`](timberclaw/README.md)。
 
 ---
 
@@ -110,16 +110,16 @@ TimberClaw/
 ├── AGENTS.md                     上游 OpenHands 开发指南（头部有 TimberClaw 前置提醒）
 ├── openhands/                    ← 上游：Agent 抽象、执行底座、工具集（最小侵入）
 ├── frontend/                     ← 上游：React + TS 前端
-│   └── src/timberclaw/           （规划中）TimberClaw 新增业务屏（Ant Design v5）
+│   └── src/timberclaw/           TimberClaw 新增业务屏（Ant Design v5，`/tc/*` 占位）
 ├── timberclaw/                   ← TimberClaw 自己的代码与文档集中点
 │   ├── README.md                   TimberClaw 侧入口
 │   ├── AGENTS.md                   Coding Agent 工作指南（必读）
 │   ├── docs/                       产品文档 / 工单清单 / 仓库约定 / 决策档案
-│   ├── backend/                    （规划中）Django 业务后端
+│   ├── backend/                    Django 业务后端骨架（`/api/health/`，M0-01）
 │   ├── templates/                  （规划中）生成系统的模板底座
 │   ├── integrations/               （规划中）GitLab / LLM / 邮件通知适配
 │   └── tooling/                    （规划中）compose 片段、脚本
-├── docker-compose.yml            将在 M0-01 时扩展（[upstream-patch]）
+├── docker-compose.yml            已扩展 `postgres` + `tc-backend`（[upstream-patch]）
 ├── LICENSE                       MIT（继承上游）
 └── ... OpenHands 其他原目录与文件（CONTRIBUTING / COMMUNITY / Development.md 等）
 ```
