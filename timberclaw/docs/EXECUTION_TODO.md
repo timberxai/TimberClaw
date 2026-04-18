@@ -77,10 +77,10 @@
 - 范围：Project Access Token 配置；连通性自检；机器账号身份分支 / commit / MR
 
 ### W-A-04: M0-05 Builder 部署与自检
-- 状态：`in_progress`（草案：`scripts/tc_wave_a_check.sh` 串联 `/api/health` 三件套；**尚未**纳入 PG 直连与 pre-commit）
-- 依赖：W-A-00、W-A-01、W-A-02、W-A-03（W-A-02 已满足；W-A-03 阶段 A 已满足，可并行完善脚本）
+- 状态：`in_progress`（`scripts/tc_wave_a_check.sh`：PG 宿主机 TCP + 复用 `tc_compose_health.sh` + LLM/GitLab；**可选** `TC_WAVE_A_RUN_PYTEST` / `TC_WAVE_A_RUN_PRE_COMMIT`；待 W-A-00 后把 pre-commit 纳入默认 CI/文档「必跑」）
+- 依赖：W-A-00、W-A-01、W-A-02、W-A-03（均已满足；W-A-00 仍影响 pre-commit 是否默认可跑）
 - 并行策略：Wave A 收口工单
-- 范围：`docker-compose.yml` + README；启动自检脚本（PG 连接、GitLab 连通、LLM 连通）
+- 范围：`docker-compose.yml` + README；启动自检脚本（PG 可达、GitLab 连通、LLM 连通）
 
 ### W-A-05: M0-02 认证与账号
 - 状态：`done`（MVP：`UserProfile` 五角色 + Session/DRF 登录 + 示例门禁 + `seed_builder_demo_users` + `pytest`）
@@ -347,7 +347,7 @@
 ### Agent-Infra
 - 负责：compose、健康检查脚本、环境变量约定
 - 当前状态：`in_progress`（下一优先：W-A-04 — PG / pre-commit 纳入统一自检）
-- 已完成：M0-01 `postgres` + `tc-backend` + `tc_compose_health.sh` + `tc_wave_a_check.sh`（草案）
+- 已完成：M0-01 `postgres` + `tc-backend` + `tc_compose_health.sh` + `tc_wave_a_check.sh`（PG + API 链 + 可选 pytest/pre-commit）
 
 ### Agent-QA
 - 负责：验收清单、命令验证、阻塞与风险归档
@@ -368,15 +368,15 @@
 
 3. **依赖图风险**：M7-01 / M7-03 / M7-04 已前移到 W-C-Aux；若 Wave C 漏做，Wave F 的 M6-01 无法启动（M6-01 强依赖 M7-04 操作日志）
 
-4. **Wave A 尚未整体 done**：M0-01 / M0-02 / M0-03 / M0-04（含写演练 API）已交付；**M0-05 全量自检**（PG / pre-commit）仍待收口；M1~M8 仍不得越级
+4. **Wave A 尚未整体 done**：M0-01 / M0-02 / M0-03 / M0-04（含写演练 API）已交付；**M0-05** 仍差「默认 CI / 文档承诺」级 pre-commit 与一键「30 min deploy」叙事收口；M1~M8 仍不得越级
 
 ---
 
 ## 下一步（Next Action）
 
 1. **分支策略**：所有开发与 PR **以 `cursor` 为 base / 合并目标**（见 `docs/CONVENTIONS.md` §4.0）。
-2. **合并 PR**：将 `tc/m0-wave-a/llm-gitlab-gateway` 合入 `cursor` 后，新分支从 `cursor` 切出继续 W-A-04。
-3. **W-A-04 收口**：扩展 `scripts/tc_wave_a_check.sh`：合并 `tc_compose_health.sh`、增加 PG 端口探测、`pytest` 可选步、pre-commit 状态（W-A-00 解锁后）。
+2. **合并 PR**：将 `tc/m0-wave-a/llm-gitlab-gateway` 合入 `cursor`（或继续在同分支迭代直至合并）。
+3. **W-A-04 收口**：在 `tc_wave_a_check.sh` 已含 PG + 可选 pytest/pre-commit 基础上，补齐 **W-A-00 解锁后** 的默认 CI 步骤与 README「30 min deploy」清单。
 4. **W-A-00**：`make install-pre-commit-hooks` 复验通过后标 `done`。
 5. **Wave B 起跑**：W-B-00 术语映射 ESLint + W-B-01 需求输入中心。
 

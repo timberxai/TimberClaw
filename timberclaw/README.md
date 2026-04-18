@@ -80,13 +80,20 @@ docker compose exec tc-backend python manage.py seed_builder_demo_users
 docker compose run --rm tc-backend python -m pytest
 ```
 
-Wave A 健康三件套（需 `tc-backend` 已启动）：
+Wave A 统一自检（**Postgres 宿主机端口** + **Django `/api/health/`**（经 `tc_compose_health.sh`）+ **LLM / GitLab**；需 `docker compose up` 后 Postgres 映射到 `127.0.0.1:${TC_POSTGRES_PORT:-5433}`、`tc-backend` 映射到 `8000`）：
 
 ```bash
 bash scripts/tc_wave_a_check.sh
 ```
 
-Django 根健康（仅 API）：
+可选：在同一脚本内跑容器内 **pytest** 或本机 **pre-commit**（后者依赖 W-A-00 装好钩子）：
+
+```bash
+TC_WAVE_A_RUN_PYTEST=1 bash scripts/tc_wave_a_check.sh
+TC_WAVE_A_RUN_PRE_COMMIT=1 bash scripts/tc_wave_a_check.sh
+```
+
+仅 Django 根健康：
 
 ```bash
 bash scripts/tc_compose_health.sh

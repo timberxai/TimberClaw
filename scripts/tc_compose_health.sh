@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Quick smoke checks for docker-compose TimberClaw services (M0-01 Batch 3+).
+# Quick smoke: Django GET /api/health/ only（完整 Wave A 自检见 scripts/tc_wave_a_check.sh）。
 set -euo pipefail
 
 TC_BACKEND="${TC_BACKEND_URL:-http://127.0.0.1:8000}"
