@@ -14,4 +14,5 @@ urlpatterns = [
     path("api/gitlab/smoke-write/", GitLabSmokeWriteView.as_view()),
     path("api/", include("accounts.urls")),
     path("api/llm/", include("llm.urls")),
+    path("api/specs/", include("specs.urls")),
 ]

@@ -20,6 +20,7 @@ COPY tc_project ./tc_project
 COPY accounts ./accounts
 COPY llm ./llm
 COPY gitlab_integration ./gitlab_integration
+COPY specs ./specs
 COPY tests ./tests
 
 EXPOSE 8000

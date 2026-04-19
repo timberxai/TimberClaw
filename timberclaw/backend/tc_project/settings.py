@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "llm.apps.LlmConfig",
     "gitlab_integration.apps.GitlabIntegrationConfig",
+    "specs.apps.SpecsConfig",
 ]
 
 MIDDLEWARE = [
