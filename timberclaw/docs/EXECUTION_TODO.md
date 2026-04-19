@@ -226,7 +226,7 @@
   - W-A-04 `done`、W-A-05 `done`、W-B-00 `done`
   - `POST /api/llm/invoke/` 在 mock provider 下可用
 - 子进度（Agent 登记）：
-  - **M1-01（后端切片 1）**：新增 `specs` Django app；`GET/POST /api/specs/documents/` + `GET .../documents/<pk>/`（登录隔离）；创建时自动 `SpecVersion` v1、`scenario_view="{}"`；测试 `timberclaw/backend/tests/test_specs_api.py`。**四入口与前端仍未做。**
+  - **M1-01（后端切片 1）**：新增 `specs` Django app；`GET/POST /api/specs/documents/` + `GET .../documents/<pk>/`（登录隔离）；创建时自动 `SpecVersion` v1、`scenario_view="{}"`；测试 `timberclaw/backend/tests/test_specs_api.py`。**四入口与前端仍未做。** PR：https://github.com/timberxai/TimberClaw/pull/13
 - DoD（建议拆 3 个 PR，每 PR 一个 Mn）：
   - **M1-01**：四种入口（上传 / 文本 / 对话 / 模板）任一可创建 `SpecDocument` 草稿；`pytest` 覆盖创建路径
   - **M1-02**：Spec Analyst 调 LLM 产出**业务场景视图**（角色 / 触发 / 主路径 / 异常 / 指标）；默认视图必须是业务场景视图（PRD V1.5 强约束 #2）
