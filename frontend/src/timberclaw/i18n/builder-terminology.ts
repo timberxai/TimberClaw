@@ -7,33 +7,36 @@ export type BuilderUiRole = "owner" | "reviewer";
 
 /** 映射键：与 PRD §7.4 行一一对应（不含需动态编号的占位，另见 format 函数）。 */
 export type BuilderTerminologyKey =
+  | "commit_sha"
   | "pr_mr"
   | "preview_deploy"
   | "prod_release"
   | "dev_failure"
   | "agent_patch"
-  | "migration"
+  | "ddl_change"
   | "rollback"
   | "spec_diff";
 
 const OWNER: Record<BuilderTerminologyKey, string> = {
+  commit_sha: "（隐藏）",
   pr_mr: "修改集",
   preview_deploy: "开启在线试用 / 试用环境",
   prod_release: "正式启用 / 上线",
   dev_failure: "系统自检发现问题",
   agent_patch: "系统自动修改",
-  migration: "数据结构调整",
+  ddl_change: "数据结构调整",
   rollback: "撤回到上一个版本",
   spec_diff: "需求变化摘要",
 };
 
 const REVIEWER: Record<BuilderTerminologyKey, string> = {
+  commit_sha: "（隐藏）",
   pr_mr: "（隐藏）",
   preview_deploy: "试用系统",
   prod_release: "系统更新",
   dev_failure: "（隐藏）",
   agent_patch: "（隐藏）",
-  migration: "（隐藏）",
+  ddl_change: "（隐藏）",
   rollback: "系统已还原为上一个版本",
   spec_diff: "版本变化说明",
 };

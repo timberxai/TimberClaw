@@ -90,8 +90,44 @@
             "message": "使用 builderTerminology（PRD §7.4 / W-B-00）"
           },
           {
+            "selector": "Literal[value=/pull request/i]",
+            "message": "使用 builderTerminology（PRD §7.4 / W-B-00）"
+          },
+          {
             "selector": "Literal[value=/\\brc-/i]",
             "message": "使用 formatReleaseCandidateLabel（W-B-00）"
+          },
+          {
+            "selector": "Literal[value=/\\bcommit\\b/i]",
+            "message": "使用 builderTerminology commit_sha / 中文描述（W-B-00）"
+          },
+          {
+            "selector": "Literal[value=/\\bmigration\\b/i]",
+            "message": "使用 builderTerminology migration（W-B-00）"
+          },
+          {
+            "selector": "Literal[value=/\\bdiff\\b/i]",
+            "message": "使用 builderTerminology spec_diff（W-B-00）"
+          },
+          {
+            "selector": "Literal[value=/\\bPreview\\b/]",
+            "message": "使用 builderTerminology preview_deploy（W-B-00）"
+          },
+          {
+            "selector": "Literal[value=/\\bProd\\b/]",
+            "message": "使用 builderTerminology prod_release（W-B-00）"
+          },
+          {
+            "selector": "Literal[value=/\\bPR\\s/]",
+            "message": "使用 builderTerminology pr_mr（W-B-00）"
+          },
+          {
+            "selector": "JSXText[value=/merge request/i]",
+            "message": "使用 builderTerminology（W-B-00）"
+          },
+          {
+            "selector": "JSXText[value=/\\bcommit\\b/i]",
+            "message": "使用 builderTerminology（W-B-00）"
           }
         ]
       }
