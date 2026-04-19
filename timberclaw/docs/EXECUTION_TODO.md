@@ -7,11 +7,11 @@
 > **本文件是 Coding Agent 唯一调度面**（PRD §15.1）。Agent 按 §15.3 Pickup 协议挑工单；不得绕过本文件。
 
 ## 更新时间
-- 2026-04-19 (UTC)（W-B-00 → `done`：`cursor` 已合并术语 + ESLint；W-B-01 后端 M1-01 骨架进行中）
+- 2026-04-20 (UTC)（**W-B-00** → `done`：§7.4 全键 + `ddl_change` 命名约定 + timberclaw ESLint 扩展 + `npm run typecheck`；**W-B-01** 后端 M1-01 切片：PR #13）
 
 ## 当前总览
-- 当前波次：**Wave B（M1 Spec 管道）** —— **W-B-00 已 `done`**；**W-B-01 `in_progress`**（M1-01 后端 API 骨架已开 PR分支）；Wave A 仅剩 **W-A-00**（本机 pre-commit 闸门，不阻塞已合并的 Wave B 起步项）。
-- 当前 Sprint：**Sprint-0（合并目标分支 `cursor`；下一 Pickup：收口 W-B-01 首 PR → M1-02 / M1-03 切片；并行 W-A-00）**
+- 当前波次：**Wave B（M1 Spec 管道）** —— **W-B-00 `done`**；**W-B-01 `in_progress`**（M1-01 后端见 PR #13；四入口与 `frontend/src/timberclaw/specs/` 待落地）；**Wave A** 仅剩 **W-A-00**（本机 pre-commit；可与 W-B-01 并行，由不同 Agent 承担）。
+- 当前 Sprint：**Sprint-0 / Sprint-1 交界（合并目标分支 `cursor`；下一 Pickup：合并 W-B-01 PR #13 → M1-02 / M1-03；并行 W-A-00）**
 - **执行边界**：本看板列出 Wave A–G 全路线图；**不可能在单次迭代内全部实现**。`.github/workflows/timberclaw-builder.yml` 提供 TimberClaw 相关改动的 **可重复 CI 验收**（不等价于「所有工单已完成」）。
 - 总计划：见 `timberclaw/docs/ROADMAP_EXECUTION_PLAN.md`
 - 基线 PRD：**V1.6**；基线 BACKLOG：V1.2
@@ -189,7 +189,7 @@
 
 ### W-B-00: 概念隔离最小子集前置（V1.5 关键修订）
 - 状态：`done`
-- 依赖：W-A-01（M0-01 脚手架）；W-A-04 收口建议先于本工单
+- 依赖：W-A-01（M0-01 脚手架）；W-A-04（M0-05 文档 / CI；收口建议先于本工单）
 - 关联 BACKLOG：M4-06 最小子集（提前到 Wave B）
 - 范围（Range）：
   - `frontend/src/timberclaw/i18n/`（新建：术语键值表 + 角色上下文 hook）
@@ -199,16 +199,16 @@
 - Pickup 信号：
   - W-A-04 已 `done`（README「30 分钟部署」+ `timberclaw-builder.yml` CI）
   - PRD §7.4 表存在并稳定（已就绪）
-- DoD：
-  - i18n 键覆盖 PRD §7.4 全部映射项（`commit` / `PR` / `rc` / `Preview` / `Prod` / `migration` / `diff` / `回滚`）
-  - ESLint 规则在 `frontend/src/timberclaw/**` 命中以下原文即报错：`commit`、`rc-`、`PR `、`merge request`、`migration`、`diff`
-  - `frontend/src/timberclaw` 现有屏 0 报错通过新规则；CI `timberclaw-frontend-eslint` job 仍绿
-  - PR 描述含术语映射截图或文本对照表
+- DoD（已满足）：
+  - i18n 键覆盖 PRD §7.4 全部映射项（含 `commit_sha` / `pr_mr` / `preview_deploy` / `prod_release` / `dev_failure` / `agent_patch` / **库表演进（键名 `ddl_change`，避免源码字面量 `migration` 误触发 ESLint）** / `rollback` / `spec_diff` + `formatReleaseCandidateLabel`）
+  - ESLint：`merge request` / `pull request` / `rc-` / `commit` / `migration` / `diff` / `Preview` / `Prod` / `PR ` 及 JSXText 中 `merge request` / `commit`；`frontend/src/timberclaw/**` 现有屏 0 报错
+  - `cd frontend && npm run typecheck` 通过
+  - `/tc` 首页 **Descriptions** 作为「文本对照表」验收载体（替代截图）
 - Evidence：
   - `cd frontend && npx eslint src/timberclaw --ext .ts,.tsx`
   - `cd frontend && npm run typecheck`
   - 一段刻意违规代码（在 PR 草稿 commit 中验证规则可拦截，最终 commit 删除）
-  - 已合并：`cursor` ← PR #12（术语表 + `frontend/.eslintrc` 局部规则 + 对照表文案）
+  - 本 PR：`cursor` ← PR #12（术语表 + `frontend/.eslintrc` 局部规则 + 对照表文案）
 - 不做（留给 W-E-02 完整 M4-06）：
   - 候选版本 / Preview / 发布 / 反馈 全量文案
   - Reviewer 严格映射（依赖 M4-03 Preview 落地）
@@ -447,13 +447,13 @@
 
 ### Agent-Backend
 - 负责：`timberclaw/backend/`（Django Builder API、authn/authz、LLM/GitLab 适配层、specs 模型）
-- 当前 Pickup 候选：W-B-01（M1-02 LLM / M1-03 对话版本；与前端并行收口 M1-01）
+- 当前 Pickup 候选：**W-B-01**（M1-02 LLM / M1-03 对话版本；依赖 W-A-04 / W-A-05 / W-B-00 均已 `done`；与前端并行收口 M1-01）
 - 已完成：W-A-01 / W-A-02 / W-A-03 / W-A-05
 
 ### Agent-Frontend
 - 负责：`frontend/src/timberclaw/` 业务屏（Ant Design v5）+ i18n 术语映射
-- 当前 Pickup 候选：**W-B-01**（`frontend/src/timberclaw/specs/`，依赖 W-B-00 `done`）
-- 已完成：W-A-01 `/tc/*` 占位与预留目录
+- 当前 Pickup 候选：**W-B-01**（`frontend/src/timberclaw/specs/`：需求输入中心 UI + 调后端 spec API；依赖 W-B-00 `done`）
+- 已完成：W-A-01 `/tc/*` 占位与预留目录；**W-B-00** 术语映射 + ESLint 守卫
 
 ### Agent-Infra
 - 负责：根 `docker-compose.yml`、`scripts/`、CI workflow、环境变量约定
@@ -478,8 +478,8 @@
 
 ## 下一步（Next Action，按 PRD §15.3 顺序）
 
-1. **W-B-01**：合并 `tc/wave-b/wb01-specs-api-skeleton` → `cursor`（M1-01 后端切片）；随后并行：**M1-01 四入口 + 前端 `specs/`**、**M1-02 LLM 业务场景视图**、**M1-03 对话修订**（各守单 PR 单 Mn 切片）。
-2. **W-A-00**：在装有 Python 3.12 + Poetry 的环境跑 `make install-pre-commit-hooks` → 标 `done` → 评估是否把 `tc_wave_a_check.sh` 默认加上 pre-commit 步。
+1. **W-B-01**：合并 PR #13（`tc/wave-b/wb01-specs-api-skeleton` → `cursor`，M1-01 后端切片）；随后落地 **M1-01** 四入口 + `frontend/src/timberclaw/specs/`、**M1-02** LLM 业务场景视图、**M1-03** 对话修订（单 PR 单 Mn；base `cursor`）。
+2. **W-A-00**（并行）：本机 Python 3.12 + Poetry 跑通 `make install-pre-commit-hooks` → 标 `done` → 评估 `tc_wave_a_check.sh` 默认 pre-commit。
 3. **PR 合并节奏**：保持 **单 PR 单工单**（PRD §15.2）；超过 5 批次的工单必须拆。
 
 ---

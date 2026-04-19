@@ -19,6 +19,9 @@ export default function TcHome() {
           集中导出，避免在业务屏硬编码工程英文词。
         </Typography.Paragraph>
         <Descriptions column={1} size="small" bordered>
+          <Descriptions.Item label="提交标识（工程侧哈希，Owner）">
+            {builderTerminology("commit_sha", "owner")}
+          </Descriptions.Item>
           <Descriptions.Item label="修改集（工程侧 MR，Owner 映射）">
             {builderTerminology("pr_mr", "owner")}
           </Descriptions.Item>
@@ -27,6 +30,21 @@ export default function TcHome() {
           </Descriptions.Item>
           <Descriptions.Item label="正式上线（Owner 映射）">
             {builderTerminology("prod_release", "owner")}
+          </Descriptions.Item>
+          <Descriptions.Item label="自检失败（工程侧构建验证失败，Owner）">
+            {builderTerminology("dev_failure", "owner")}
+          </Descriptions.Item>
+          <Descriptions.Item label="自动修复（工程侧无人值守修改，Owner）">
+            {builderTerminology("agent_patch", "owner")}
+          </Descriptions.Item>
+          <Descriptions.Item label="数据结构变更（库表演进，Owner）">
+            {builderTerminology("ddl_change", "owner")}
+          </Descriptions.Item>
+          <Descriptions.Item label="撤销发布（回退到上一版本，Owner）">
+            {builderTerminology("rollback", "owner")}
+          </Descriptions.Item>
+          <Descriptions.Item label="需求差异（结构化对照摘要，Owner）">
+            {builderTerminology("spec_diff", "owner")}
           </Descriptions.Item>
           <Descriptions.Item label="候选版本编号示例（#3，Owner 映射）">
             {formatReleaseCandidateLabel(3, "owner")}
